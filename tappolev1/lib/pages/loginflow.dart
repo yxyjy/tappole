@@ -345,6 +345,40 @@ class OtpStep extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(6, (index) {
+                return SizedBox(
+                  width: 40,
+                  height: 50,
+                  child: TextField(
+                    autofocus: index == 0,
+                    textAlign: TextAlign.center,
+                    keyboardType: TextInputType.number,
+                    maxLength: 1,
+                    decoration: const InputDecoration(
+                      counterText: "",
+                      fillColor: Colors.white,
+                      filled: true,
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.transparent),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFFF06638)),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      if (value.length == 1 && index < 5) {
+                        FocusScope.of(context).nextFocus();
+                      } else if (value.isEmpty && index > 0) {
+                        FocusScope.of(context).previousFocus();
+                      }
+                    },
+                  ),
+                );
+              }),
+            ),
+
             // Row(
             //   children: [
             //     const TextField(

@@ -76,8 +76,8 @@ flutter:
   fonts:
     - family: Archivo
       fonts:
-        - asset: lib\assets\fonts\Archivo-VariableFont_wdth,wght.ttf
-        - asset: lib\assets\fonts\Archivo-Italic-VariableFont_wdth,wght.ttf
+        - asset: lib\assets\fonts\ArchivoVariable.ttf
+        - asset: lib\assets\fonts\ArchivoItalicVariable.ttf
           style: italic
   #   - family: Trajan Pro
   #     fonts:
