@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'main_shell.dart';
 
 // The main widget that hosts the PageView
 class LoginFlowPage extends StatefulWidget {
@@ -31,10 +32,10 @@ class _LoginFlowPageState extends State<LoginFlowPage> {
     );
   }
 
-  void _goToHomePage() {
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+  void _goToMainShell() {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const MainShell()),
+    );
   }
 
   @override
@@ -46,7 +47,7 @@ class _LoginFlowPageState extends State<LoginFlowPage> {
         children: <Widget>[
           WelcomeStep(onNext: _nextPage),
           PhoneStep(onNext: _nextPage, onPrevious: _previousPage),
-          OtpStep(onComplete: _goToHomePage, onPrevious: _previousPage),
+          OtpStep(onComplete: _goToMainShell, onPrevious: _previousPage),
         ],
       ),
     );
@@ -531,23 +532,4 @@ class OtpStep extends StatelessWidget {
   }
 }
 
-// The destination after the login flow is complete
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        automaticallyImplyLeading: false,
-      ),
-      body: const Center(
-        child: Text(
-          '🎉 Logged In Successfully! 🎉',
-          style: TextStyle(fontSize: 24),
-        ),
-      ),
-    );
-  }
-}
+// The destination after the login flow is the main app shell
