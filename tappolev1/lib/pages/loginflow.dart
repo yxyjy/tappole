@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../components/senior_navbar.dart';
 
 // The main widget that hosts the PageView
 class LoginFlowPage extends StatefulWidget {
@@ -34,7 +35,7 @@ class _LoginFlowPageState extends State<LoginFlowPage> {
   void _goToHomePage() {
     Navigator.of(
       context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+    ).pushReplacement(MaterialPageRoute(builder: (_) => const SeniorNavBar()));
   }
 
   @override
@@ -65,7 +66,7 @@ class WelcomeStep extends StatelessWidget {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('lib/assets/images/loginbg.png'),
+            image: AssetImage('assets/images/loginbg.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -73,7 +74,7 @@ class WelcomeStep extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const SizedBox(height: 250.0),
-            Image.asset('lib/assets/images/logo.png', height: 150.0),
+            Image.asset('assets/images/logo.png', height: 150.0),
             const SizedBox(height: 100.0),
             Container(
               decoration: BoxDecoration(
@@ -156,7 +157,7 @@ class PhoneStep extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 50.0),
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('lib/assets/images/login2bg.png'),
+            image: AssetImage('assets/images/login2bg.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -176,7 +177,7 @@ class PhoneStep extends StatelessWidget {
               ),
               textAlign: TextAlign.left,
             ),
-            const SizedBox(height: 50),
+            const SizedBox(height: 30),
             const Text(
               'Please enter your phone number. We will send you a text message with your OTP.',
               style: TextStyle(
@@ -229,7 +230,7 @@ class PhoneStep extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFF06638),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 100.0,
+                    horizontal: 20.0,
                     vertical: 15.0,
                   ),
                   shape: RoundedRectangleBorder(
@@ -240,8 +241,13 @@ class PhoneStep extends StatelessWidget {
                   onNext();
                 },
                 child: const Text(
-                  'Get OTP',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  'Confirm',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontFamily: 'Archivo',
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -266,25 +272,6 @@ class PhoneStep extends StatelessWidget {
                 ),
               ],
             ),
-
-            // NEW: Button layout
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: OutlinedButton(
-            //         onPressed: onPrevious,
-            //         child: const Text('Previous'),
-            //       ),
-            //     ),
-            //     const SizedBox(width: 16),
-            //     Expanded(
-            //       child: ElevatedButton(
-            //         onPressed: onNext,
-            //         child: const Text('Send OTP'),
-            //       ),
-            //     ),
-            //   ],
-            // ),
           ],
         ),
       ),
@@ -311,7 +298,7 @@ class OtpStep extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 50.0),
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('lib/assets/images/login2bg.png'),
+            image: AssetImage('assets/images/login2bg.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -379,112 +366,6 @@ class OtpStep extends StatelessWidget {
               }),
             ),
 
-            // Row(
-            //   children: [
-            //     const TextField(
-            //       decoration: InputDecoration(
-            //         fillColor: Colors.white,
-            //         filled: true,
-            //         enabledBorder: null,
-            //         focusedBorder: OutlineInputBorder(
-            //           borderSide: BorderSide(color: Color(0xFFF06638)),
-            //         ),
-            //         labelText: 'Phone Number',
-            //         labelStyle: TextStyle(
-            //           color: Color(0x80192133),
-            //           fontFamily: 'Archivo',
-            //           fontWeight: FontWeight.w300,
-            //         ),
-            //       ),
-            //       keyboardType: TextInputType.phone,
-            //     ),
-            //     const TextField(
-            //       decoration: InputDecoration(
-            //         fillColor: Colors.white,
-            //         filled: true,
-            //         enabledBorder: null,
-            //         focusedBorder: OutlineInputBorder(
-            //           borderSide: BorderSide(color: Color(0xFFF06638)),
-            //         ),
-            //         labelText: 'Phone Number',
-            //         labelStyle: TextStyle(
-            //           color: Color(0x80192133),
-            //           fontFamily: 'Archivo',
-            //           fontWeight: FontWeight.w300,
-            //         ),
-            //       ),
-            //       keyboardType: TextInputType.phone,
-            //     ),
-            //     const TextField(
-            //       decoration: InputDecoration(
-            //         fillColor: Colors.white,
-            //         filled: true,
-            //         enabledBorder: null,
-            //         focusedBorder: OutlineInputBorder(
-            //           borderSide: BorderSide(color: Color(0xFFF06638)),
-            //         ),
-            //         labelText: 'Phone Number',
-            //         labelStyle: TextStyle(
-            //           color: Color(0x80192133),
-            //           fontFamily: 'Archivo',
-            //           fontWeight: FontWeight.w300,
-            //         ),
-            //       ),
-            //       keyboardType: TextInputType.phone,
-            //     ),
-            //     const TextField(
-            //       decoration: InputDecoration(
-            //         fillColor: Colors.white,
-            //         filled: true,
-            //         enabledBorder: null,
-            //         focusedBorder: OutlineInputBorder(
-            //           borderSide: BorderSide(color: Color(0xFFF06638)),
-            //         ),
-            //         labelText: 'Phone Number',
-            //         labelStyle: TextStyle(
-            //           color: Color(0x80192133),
-            //           fontFamily: 'Archivo',
-            //           fontWeight: FontWeight.w300,
-            //         ),
-            //       ),
-            //       keyboardType: TextInputType.phone,
-            //     ),
-            //     const TextField(
-            //       decoration: InputDecoration(
-            //         fillColor: Colors.white,
-            //         filled: true,
-            //         enabledBorder: null,
-            //         focusedBorder: OutlineInputBorder(
-            //           borderSide: BorderSide(color: Color(0xFFF06638)),
-            //         ),
-            //         labelText: 'Phone Number',
-            //         labelStyle: TextStyle(
-            //           color: Color(0x80192133),
-            //           fontFamily: 'Archivo',
-            //           fontWeight: FontWeight.w300,
-            //         ),
-            //       ),
-            //       keyboardType: TextInputType.phone,
-            //     ),
-            //     const TextField(
-            //       decoration: InputDecoration(
-            //         fillColor: Colors.white,
-            //         filled: true,
-            //         enabledBorder: null,
-            //         focusedBorder: OutlineInputBorder(
-            //           borderSide: BorderSide(color: Color(0xFFF06638)),
-            //         ),
-            //         labelText: 'Phone Number',
-            //         labelStyle: TextStyle(
-            //           color: Color(0x80192133),
-            //           fontFamily: 'Archivo',
-            //           fontWeight: FontWeight.w300,
-            //         ),
-            //       ),
-            //       keyboardType: TextInputType.phone,
-            //     ),
-            //   ],
-            // ),
             const SizedBox(height: 80),
 
             Container(
@@ -502,7 +383,7 @@ class OtpStep extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFF06638),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 100.0,
+                    horizontal: 70.0,
                     vertical: 15.0,
                   ),
                   shape: RoundedRectangleBorder(
@@ -510,11 +391,17 @@ class OtpStep extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
+                  // Debug: confirm the button press reached here
                   onComplete();
                 },
                 child: const Text(
-                  'Get OTP',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  'Confirm',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontFamily: 'Archivo',
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),

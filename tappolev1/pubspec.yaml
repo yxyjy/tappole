@@ -58,7 +58,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - lib/assets/images/
+    - assets/images/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
@@ -76,8 +76,8 @@ flutter:
   fonts:
     - family: Archivo
       fonts:
-        - asset: lib\assets\fonts\ArchivoVariable.ttf
-        - asset: lib\assets\fonts\ArchivoItalicVariable.ttf
+        - asset: assets/fonts/ArchivoVariable.ttf
+        - asset: assets/fonts/ArchivoItalicVariable.ttf
           style: italic
   #   - family: Trajan Pro
   #     fonts:
