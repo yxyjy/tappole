@@ -26,18 +26,19 @@ class _SeniorHomePageState extends State<SeniorHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            const SizedBox(height: 54),
             const Text(
               'Struggling with downloading an app?',
               style: TextStyle(
                 height: 1.0,
                 color: Color(0xFF192133),
-                fontSize: 44,
+                fontSize: 36,
                 fontFamily: 'Archivo',
                 fontWeight: FontWeight.w900,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 50),
+            const SizedBox(height: 40),
             const Text(
               'In Tappole.  you can request for assistance from volunteers to help you out or guide you through digital tasks.',
               style: TextStyle(
@@ -62,7 +63,7 @@ class _SeniorHomePageState extends State<SeniorHomePage> {
               textAlign: TextAlign.center,
             ),
 
-            const SizedBox(height: 60),
+            const SizedBox(height: 40),
 
             Container(
               decoration: BoxDecoration(
@@ -79,8 +80,8 @@ class _SeniorHomePageState extends State<SeniorHomePage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFF06638),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 45.0,
-                    vertical: 40.0,
+                    horizontal: 32.0,
+                    vertical: 30.0,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(100.0),

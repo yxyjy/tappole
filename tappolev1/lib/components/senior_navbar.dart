@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pages/senior_flow/senior_home.dart';
 import '../pages/senior_flow/senior_activity.dart';
+import '../pages/senior_flow/senior_profile.dart';
 
 class SeniorNavBar extends StatefulWidget {
   const SeniorNavBar({super.key});
@@ -16,7 +17,7 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
   static final List<Widget> _widgetOptions = <Widget>[
     const SeniorActivityPage(),
     const SeniorHomePage(),
-    const Text('Profile Page'), // Placeholder for Profile page
+    const SeniorProfilePage(),
   ];
 
   void _onItemTapped(int index) {
@@ -31,8 +32,12 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
       body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
-          _buildNavItem(Icons.local_activity, 'Activity', 0),
-          _buildNavItem(Icons.request_page, 'Request', 1),
+          _buildNavItem(Icons.menu, 'Activity', 0),
+          _buildNavItem(
+            Image.asset('assets/images/requestlogo.png'),
+            'Request',
+            1,
+          ),
           _buildNavItem(Icons.person, 'Profile', 2),
         ],
         currentIndex: _selectedIndex,
@@ -46,19 +51,47 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
   }
 
   BottomNavigationBarItem _buildNavItem(
-    IconData icon,
+    Object iconOrImagePath, // Change the type to Object or dynamic
     String label,
     int index,
   ) {
     const activeColor = Color(0xFFDE7E55);
+    // const activeGradient = LinearGradient(
+    //   colors: [
+    //     Color.fromARGB(255, 255, 203, 173),
+    //     Color(0xFFDE7E55), // Starting color (your original color)
+    //     // Ending color (a lighter shade for effect)
+    //   ],
+    //   begin: Alignment.topLeft,
+    //   end: Alignment.bottomRight,
+    // );
     final bool isSelected = _selectedIndex == index;
+
+    // 1. Conditional Widget Building
+    Widget iconWidget;
+    if (iconOrImagePath is IconData) {
+      // If it's an IconData, build a standard Icon
+      iconWidget = Icon(iconOrImagePath, color: Colors.white);
+    } else if (iconOrImagePath is String) {
+      // If it's a String, treat it as an asset path and build an Image.asset
+      iconWidget = Image.asset(
+        iconOrImagePath,
+        width: 24.0, // Set an appropriate size for the image icon
+        height: 24.0,
+        color: Colors
+            .white, // Optional: You might need to set a color if the image is a vector/SVG that supports color overriding, or you can omit this.
+      );
+    } else {
+      // Fallback/Error case
+      iconWidget = const SizedBox.shrink();
+    }
 
     return BottomNavigationBarItem(
       icon: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(6.0),
             decoration: isSelected
                 ? BoxDecoration(
                     color: activeColor,
@@ -73,16 +106,20 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
                     ],
                   )
                 : null,
-            child: Icon(icon, color: Colors.white),
+            child: iconWidget, // Use the dynamically created widget
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontFamily: 'Archivo',
+            ),
           ),
         ],
       ),
-      label: '', // The label is handled by the custom Column
+      label: '',
     );
   }
 }
