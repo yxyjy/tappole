@@ -1,56 +1,91 @@
 import 'package:flutter/material.dart';
-import '../components/senior_navbar.dart';
+import '../../components/senior_navbar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+final supabase = Supabase.instance.client;
+
+enum OtpSteps { welcome, phoneEntry, otpVerification }
 
 // The main widget that hosts the PageView
-class LoginFlowPage extends StatefulWidget {
-  const LoginFlowPage({super.key});
+class Otploginflow extends StatefulWidget {
+  const Otploginflow({super.key});
 
   @override
-  State<LoginFlowPage> createState() => _LoginFlowPageState();
+  State<Otploginflow> createState() => _OtploginflowState();
 }
 
-class _LoginFlowPageState extends State<LoginFlowPage> {
-  final PageController _pageController = PageController();
+class _OtploginflowState extends State<Otploginflow> {
+  //final PageController _pageController = PageController();
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  OtpSteps _currentStep = OtpSteps.phoneEntry;
+  String _phoneNumber = '';
+
+  void _nextStep(OtpSteps step) {
+    setState(() {
+      _currentStep = step;
+    });
   }
 
-  void _nextPage() {
-    _pageController.nextPage(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeIn,
-    );
+  void _setPhoneAndAdvance(String phone) {
+    // 1. Save the phone number
+    _phoneNumber = phone;
+
+    // 2. Call Supabase sign-inWithOtp function here (omitted for clean structure)
+    // final supabase = Supabase.instance.client;
+    // final response = await supabase.auth.signInWithOtp(phone: phone);
+
+    // 3. Advance to the OTP verification step
+    _nextStep(OtpSteps.otpVerification);
   }
 
-  void _previousPage() {
-    _pageController.previousPage(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeIn,
-    );
-  }
+  void _verifyOtpAndComplete(String otpCode) {
+    // 1. Call Supabase verifyOtp function here (omitted for clean structure)
+    // final response = await supabase.auth.verifyOTP(phone: _phoneNumber, token: otpCode);
 
-  void _goToHomePage() {
+    // 2. Navigate away on success
     Navigator.of(
       context,
     ).pushReplacement(MaterialPageRoute(builder: (_) => const SeniorNavBar()));
   }
 
+  void _goToPreviousStep() {
+    setState(() {
+      if (_currentStep == OtpSteps.otpVerification) {
+        _currentStep = OtpSteps.phoneEntry;
+      } else if (_currentStep == OtpSteps.phoneEntry) {
+        _currentStep = OtpSteps.welcome;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        children: <Widget>[
-          WelcomeStep(onNext: _nextPage),
-          PhoneStep(onNext: _nextPage, onPrevious: _previousPage),
-          OtpStep(onComplete: _goToHomePage, onPrevious: _previousPage),
-        ],
-      ),
-    );
+    Widget currentWidget;
+
+    switch (_currentStep) {
+      case OtpSteps.welcome:
+        currentWidget = WelcomeStep(
+          onNext: () => _nextStep(OtpSteps.phoneEntry),
+        );
+        break;
+      case OtpSteps.phoneEntry:
+        currentWidget = PhoneEntryWidget(
+          onSubmitted:
+              _setPhoneAndAdvance, // Passes phone number back and advances
+          onPrevious: _goToPreviousStep,
+        );
+        break;
+      case OtpSteps.otpVerification:
+        currentWidget = OtpVerificationWidget(
+          phoneNumber: _phoneNumber, // Passes the collected phone number down
+          onComplete:
+              _verifyOtpAndComplete, // Passes the final verification logic
+          onPrevious: _goToPreviousStep,
+        );
+        break;
+    }
+
+    return Scaffold(body: currentWidget);
   }
 }
 
@@ -142,11 +177,27 @@ class WelcomeStep extends StatelessWidget {
   }
 }
 
-// Step 2: Enter Phone Number (UPDATED)
-class PhoneStep extends StatelessWidget {
-  final VoidCallback onNext;
-  final VoidCallback onPrevious; // NEW: Callback for the previous button
-  const PhoneStep({super.key, required this.onNext, required this.onPrevious});
+class PhoneEntryWidget extends StatefulWidget {
+  final ValueChanged<String> onSubmitted;
+  final VoidCallback onPrevious;
+
+  const PhoneEntryWidget({
+    super.key,
+    required this.onSubmitted,
+    required this.onPrevious,
+  });
+
+  State<PhoneEntryWidget> createState() => _PhoneEntryWidgetState();
+}
+
+class _PhoneEntryWidgetState extends State<PhoneEntryWidget> {
+  final TextEditingController _phoneController = TextEditingController();
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -190,7 +241,8 @@ class PhoneStep extends StatelessWidget {
               textAlign: TextAlign.left,
             ),
             const SizedBox(height: 20),
-            const TextField(
+            TextField(
+              controller: _phoneController,
               decoration: InputDecoration(
                 fillColor: Colors.white,
                 filled: true,
@@ -238,7 +290,7 @@ class PhoneStep extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  onNext();
+                  widget.onSubmitted(_phoneController.text.trim());
                 },
                 child: const Text(
                   'Confirm',
@@ -280,14 +332,40 @@ class PhoneStep extends StatelessWidget {
 }
 
 // Step 3: Enter OTP (UPDATED)
-class OtpStep extends StatelessWidget {
-  final VoidCallback onComplete;
-  final VoidCallback onPrevious; // NEW: Callback for the previous button
-  const OtpStep({
+class OtpVerificationWidget extends StatefulWidget {
+  final String phoneNumber; // NEW: The number to verify
+  final ValueChanged<String> onComplete; // onComplete now accepts the OTP code
+  final VoidCallback onPrevious;
+
+  const OtpVerificationWidget({
     super.key,
+    required this.phoneNumber,
     required this.onComplete,
     required this.onPrevious,
   });
+
+  @override
+  State<OtpVerificationWidget> createState() => _OtpVerificationWidgetState();
+}
+
+class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
+  // Store all 6 OTP digits in a single list
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
+
+  @override
+  void dispose() {
+    for (var controller in _otpControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  String _getOtpCode() {
+    return _otpControllers.map((c) => c.text).join();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -392,7 +470,7 @@ class OtpStep extends StatelessWidget {
                 ),
                 onPressed: () {
                   // Debug: confirm the button press reached here
-                  onComplete();
+                  widget.onComplete(_getOtpCode());
                 },
                 child: const Text(
                   'Confirm',
@@ -426,47 +504,7 @@ class OtpStep extends StatelessWidget {
                 ),
               ],
             ),
-
-            // NEW: Button layout
-            // Row(
-            //   children: [
-            //     Expanded(
-            //       child: OutlinedButton(
-            //         onPressed: onPrevious,
-            //         child: const Text('Previous'),
-            //       ),
-            //     ),
-            //     const SizedBox(width: 16),
-            //     Expanded(
-            //       child: ElevatedButton(
-            //         onPressed: onNext,
-            //         child: const Text('Send OTP'),
-            //       ),
-            //     ),
-            //   ],
-            // ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-// The destination after the login flow is complete
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        automaticallyImplyLeading: false,
-      ),
-      body: const Center(
-        child: Text(
-          '🎉 Logged In Successfully! 🎉',
-          style: TextStyle(fontSize: 24),
         ),
       ),
     );
