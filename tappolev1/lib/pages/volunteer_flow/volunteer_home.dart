@@ -19,7 +19,7 @@ class VolunteerHomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'Struggling with downloading an app?',
+              'Volunteer Home Page',
               style: TextStyle(
                 height: 1.0,
                 color: Color(0xFF192133),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tappolev1/services/auth_service.dart';
 import '../../components/senior_navbar.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-// --- ENUM and Main Widget (Parent State Management) ---
+import '../../components/volunteer_navbar.dart';
+import '../auth/signupflow.dart';
 
 enum EmailSteps { welcome, emailPasswordEntry }
 
@@ -15,84 +15,59 @@ class Emailloginflow extends StatefulWidget {
 
 class _EmailloginflowState extends State<Emailloginflow> {
   EmailSteps _currentStep = EmailSteps.welcome;
+  bool _isLoading = false;
 
-  // Data State managed by the parent widget
-  String _email = '';
-  String _password = '';
+  //auth service
+  final AuthService authService = AuthService();
 
-  // --- Navigation & State Update Methods ---
-
+  //method to navigate to next page
   void _nextStep(EmailSteps step) {
     setState(() {
       _currentStep = step;
     });
   }
 
+  //method to attempt login
   void _signInAndNavigate(String email, String password) async {
-    // 1. Save the credentials (optional, mainly for debugging/logging)
-    _email = email;
-    _password = password;
+    setState(() {
+      _isLoading = true;
+    });
 
-    // 2. >>> SUPABASE INTEGRATION POINT 1: SIGN IN <<<
-    final supabase = Supabase.instance.client;
-    Future<AuthResponse> signInWithEmailPassword(
-      String email,
-      String password,
-    ) async {
-      return await supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
+    try {
+      await authService.signInWithEmailPassword(email, password);
+
+      final String? userRole = await authService.getCurrentUserRole();
+
+      if (!mounted) return;
+
+      if (userRole == 'senior') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SeniorNavBar()),
+        );
+      } else if (userRole == 'volunteer') {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const VolunteerNavbar()),
+        );
+      } else {
+        // Handle unassigned role or error case - head back to senior side
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error: User role not found.')),
+        );
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const SeniorNavBar()),
+        );
+        // Optionally navigate back to login
+        // _nextStep(EmailSteps.emailPasswordEntry);
+      }
+    } catch (e) {
+      //handle error
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Account not found!')));
     }
-
-    // --- Placeholder for fetching user role ---
-    // In a real app, after a successful sign-in, you fetch the role
-    // from your 'profiles' table using the current user's ID.
-
-    // ** SIMULATE ROLE FETCHING: Replace with real logic **
-    // For demonstration, let's assume a function that returns the role string.
-    String userRole = await _fetchUserRolePlaceholder();
-
-    // 3. Navigate based on the fetched role
-    if (!mounted) return;
-
-    if (userRole == 'senior') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SeniorNavBar()),
-      );
-    } else if (userRole == 'volunteer') {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const SeniorNavBar()),
-      );
-    } else {
-      // Handle unassigned role or error case
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error: User role not found.')),
-      );
-      // Optionally navigate back to login
-      _nextStep(EmailSteps.emailPasswordEntry);
-    }
-  }
-
-  // Placeholder function to simulate fetching the user's role
-  // (e.g., from the 'profiles' table after successful login)
-  Future<String> _fetchUserRolePlaceholder() async {
-    // Replace with your actual Supabase query!
-    await Future.delayed(
-      const Duration(milliseconds: 500),
-    ); // Simulate network delay
-
-    // Simple logic based on email for testing:
-    if (_email.contains('senior')) {
-      return 'senior';
-    } else if (_email.contains('volunteer')) {
-      return 'volunteer';
-    }
-    return 'unassigned';
   }
 
   // --- Build Method (Conditional Rendering) ---
-
   @override
   Widget build(BuildContext context) {
     Widget currentWidget;
@@ -188,12 +163,12 @@ class WelcomeStep extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    // Navigate to registration page
+                    Navigator.of(context).push(Signupflow.route());
                   },
                   child: const Text(
                     'Register here.',
                     style: TextStyle(
-                      color: Color(0xFFF06638),
+                      color: Color.fromARGB(255, 27, 23, 255),
                       fontWeight: FontWeight.bold,
                       decoration: TextDecoration.underline,
                     ),
@@ -298,6 +273,7 @@ class _EmailPasswordStepState extends State<EmailPasswordStep> {
             const SizedBox(height: 10),
             TextField(
               controller: _passwordController,
+              obscureText: true,
               decoration: InputDecoration(
                 fillColor: Colors.white,
                 filled: true,

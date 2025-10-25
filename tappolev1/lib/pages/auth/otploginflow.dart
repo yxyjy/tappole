@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tappolev1/pages/auth/signupflow.dart';
 import '../../components/senior_navbar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -187,6 +188,7 @@ class PhoneEntryWidget extends StatefulWidget {
     required this.onPrevious,
   });
 
+  @override
   State<PhoneEntryWidget> createState() => _PhoneEntryWidgetState();
 }
 
@@ -491,7 +493,7 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
                 const Text("Or ", style: TextStyle(color: Color(0x80192133))),
                 GestureDetector(
                   onTap: () {
-                    // Navigate to registration page
+                    Navigator.of(context).push(Signupflow.route());
                   },
                   child: const Text(
                     'login with Email and Password',
