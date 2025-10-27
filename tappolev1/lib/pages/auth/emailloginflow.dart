@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:tappolev1/pages/auth/otploginflow.dart';
 import 'package:tappolev1/services/auth_service.dart';
 import '../../components/senior_navbar.dart';
 import '../../components/volunteer_navbar.dart';
 import '../auth/signupflow.dart';
+import '../../theme/app_styles.dart';
 
 enum EmailSteps { welcome, emailPasswordEntry }
 
 class Emailloginflow extends StatefulWidget {
   const Emailloginflow({super.key});
+
+  static Route<void> route() {
+    return MaterialPageRoute(builder: (context) => const Emailloginflow());
+  }
 
   @override
   State<Emailloginflow> createState() => _EmailloginflowState();
@@ -165,14 +171,7 @@ class WelcomeStep extends StatelessWidget {
                   onTap: () {
                     Navigator.of(context).push(Signupflow.route());
                   },
-                  child: const Text(
-                    'Register here.',
-                    style: TextStyle(
-                      color: Color.fromARGB(255, 27, 23, 255),
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
+                  child: Text('Create an account', style: primaryLinkTextStyle),
                 ),
               ],
             ),
@@ -337,13 +336,15 @@ class _EmailPasswordStepState extends State<EmailPasswordStep> {
               children: <Widget>[
                 const Text("Or ", style: TextStyle(color: Color(0x80192133))),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.of(context).push(Otploginflow.route());
+                  },
                   child: const Text(
-                    'login with Email and Password',
+                    'login with Phone Number',
                     style: TextStyle(
                       color: Color(0xFFF06638),
                       fontWeight: FontWeight.bold,
-                      // decoration: TextDecoration.underline,
+                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),

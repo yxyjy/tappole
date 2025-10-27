@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pages/senior_flow/senior_home.dart';
 import '../pages/senior_flow/senior_activity.dart';
-import '../pages/senior_flow/senior_profile.dart';
+import '../pages/general/user_profile.dart';
 
 class SeniorNavBar extends StatefulWidget {
   const SeniorNavBar({super.key});

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:tappolev1/pages/auth/signupflow.dart';
+import 'package:tappolev1/pages/auth/emailloginflow.dart';
 import '../../components/senior_navbar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
 
-enum OtpSteps { welcome, phoneEntry, otpVerification }
+enum OtpSteps { phoneEntry, otpVerification }
 
 // The main widget that hosts the PageView
 class Otploginflow extends StatefulWidget {
   const Otploginflow({super.key});
+
+  static Route<void> route() {
+    return MaterialPageRoute(builder: (context) => const Otploginflow());
+  }
 
   @override
   State<Otploginflow> createState() => _OtploginflowState();
@@ -53,9 +57,10 @@ class _OtploginflowState extends State<Otploginflow> {
     setState(() {
       if (_currentStep == OtpSteps.otpVerification) {
         _currentStep = OtpSteps.phoneEntry;
-      } else if (_currentStep == OtpSteps.phoneEntry) {
-        _currentStep = OtpSteps.welcome;
       }
+      // } else if (_currentStep == OtpSteps.phoneEntry) {
+      //   _currentStep = OtpSteps.welcome;
+      // }
     });
   }
 
@@ -64,11 +69,11 @@ class _OtploginflowState extends State<Otploginflow> {
     Widget currentWidget;
 
     switch (_currentStep) {
-      case OtpSteps.welcome:
-        currentWidget = WelcomeStep(
-          onNext: () => _nextStep(OtpSteps.phoneEntry),
-        );
-        break;
+      // case OtpSteps.welcome:
+      //   currentWidget = WelcomeStep(
+      //     onNext: () => _nextStep(OtpSteps.phoneEntry),
+      //   );
+      //   break;
       case OtpSteps.phoneEntry:
         currentWidget = PhoneEntryWidget(
           onSubmitted:
@@ -90,93 +95,93 @@ class _OtploginflowState extends State<Otploginflow> {
   }
 }
 
-class WelcomeStep extends StatelessWidget {
-  final VoidCallback onNext;
-  const WelcomeStep({super.key, required this.onNext});
+// class WelcomeStep extends StatelessWidget {
+//   final VoidCallback onNext;
+//   const WelcomeStep({super.key, required this.onNext});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/loginbg.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const SizedBox(height: 250.0),
-            Image.asset('assets/images/logo.png', height: 150.0),
-            const SizedBox(height: 100.0),
-            Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFF06638).withAlpha(50),
-                    spreadRadius: 5,
-                    blurRadius: 20,
-                    offset: const Offset(0, 0),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFF06638),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 50.0,
-                    vertical: 15.0,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-                onPressed: () {
-                  onNext();
-                },
-                child: const Text(
-                  'Login',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontFamily: 'Archivo',
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const Text(
-                  "Don't have an account yet? ",
-                  style: TextStyle(color: Colors.white, fontFamily: 'Archivo'),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    // Navigate to registration page
-                  },
-                  child: const Text(
-                    'Register here.',
-                    style: TextStyle(
-                      color: Color(0xFFF06638),
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: Container(
+//         width: double.infinity,
+//         height: double.infinity,
+//         decoration: const BoxDecoration(
+//           image: DecorationImage(
+//             image: AssetImage('assets/images/loginbg.png'),
+//             fit: BoxFit.cover,
+//           ),
+//         ),
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: <Widget>[
+//             const SizedBox(height: 250.0),
+//             Image.asset('assets/images/logo.png', height: 150.0),
+//             const SizedBox(height: 100.0),
+//             Container(
+//               decoration: BoxDecoration(
+//                 boxShadow: [
+//                   BoxShadow(
+//                     color: const Color(0xFFF06638).withAlpha(50),
+//                     spreadRadius: 5,
+//                     blurRadius: 20,
+//                     offset: const Offset(0, 0),
+//                   ),
+//                 ],
+//               ),
+//               child: ElevatedButton(
+//                 style: ElevatedButton.styleFrom(
+//                   backgroundColor: Color(0xFFF06638),
+//                   padding: const EdgeInsets.symmetric(
+//                     horizontal: 50.0,
+//                     vertical: 15.0,
+//                   ),
+//                   shape: RoundedRectangleBorder(
+//                     borderRadius: BorderRadius.circular(30.0),
+//                   ),
+//                 ),
+//                 onPressed: () {
+//                   onNext();
+//                 },
+//                 child: const Text(
+//                   'Login',
+//                   style: TextStyle(
+//                     fontSize: 18,
+//                     color: Colors.white,
+//                     fontFamily: 'Archivo',
+//                     fontWeight: FontWeight.w900,
+//                   ),
+//                 ),
+//               ),
+//             ),
+//             const SizedBox(height: 24.0),
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: <Widget>[
+//                 const Text(
+//                   "Don't have an account yet? ",
+//                   style: TextStyle(color: Colors.white, fontFamily: 'Archivo'),
+//                 ),
+//                 GestureDetector(
+//                   onTap: () {
+//                     // Navigate to registration page
+//                   },
+//                   child: const Text(
+//                     'Register here.',
+//                     style: TextStyle(
+//                       color: Color(0xFFF06638),
+//                       fontWeight: FontWeight.bold,
+//                       decoration: TextDecoration.underline,
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class PhoneEntryWidget extends StatefulWidget {
   final ValueChanged<String> onSubmitted;
@@ -313,14 +318,15 @@ class _PhoneEntryWidgetState extends State<PhoneEntryWidget> {
                 const Text("Or ", style: TextStyle(color: Color(0x80192133))),
                 GestureDetector(
                   onTap: () {
-                    // Navigate to registration page
+                    Navigator.of(context).pop();
+                    //TODO: ensure any entered data is cleared
                   },
                   child: const Text(
                     'login with Email and Password',
                     style: TextStyle(
                       color: Color(0xFFF06638),
                       fontWeight: FontWeight.bold,
-                      // decoration: TextDecoration.underline,
+                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),
@@ -493,14 +499,14 @@ class _OtpVerificationWidgetState extends State<OtpVerificationWidget> {
                 const Text("Or ", style: TextStyle(color: Color(0x80192133))),
                 GestureDetector(
                   onTap: () {
-                    Navigator.of(context).push(Signupflow.route());
+                    Navigator.of(context).push(Emailloginflow.route());
                   },
                   child: const Text(
                     'login with Email and Password',
                     style: TextStyle(
                       color: Color(0xFFF06638),
                       fontWeight: FontWeight.bold,
-                      // decoration: TextDecoration.underline,
+                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tappolev1/services/auth_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:tappolev1/theme/app_styles.dart';
+import 'package:tappolev1/components/primary_button.dart';
 
 enum SignupSteps { roleSelection, emailPasswordEntry, userDetailsEntry }
 
@@ -186,49 +188,37 @@ class RoleSelectionStep extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 50.0),
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/login2bg.png'),
+            image: AssetImage('assets/images/loginbg.png'),
             fit: BoxFit.cover,
           ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              'Tell us who \nyou are',
-              style: TextStyle(
-                height: 1.0,
-                color: Color(0xFF192133),
-                fontSize: 44,
-                fontFamily: 'Archivo',
-                fontWeight: FontWeight.w900,
-              ),
-              textAlign: TextAlign.left,
+            const Image(
+              image: AssetImage('assets/images/logo2.png'),
+              height: 80,
             ),
-            const SizedBox(height: 30),
-            const Text(
-              'Please select your role to continue.',
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.05,
-                fontFamily: 'Archivo',
-                fontWeight: FontWeight.w300,
-                color: Color(0xFF192133),
-              ),
-              textAlign: TextAlign.left,
+            const SizedBox(height: 20),
+            Text(
+              'Please select your role.',
+              style: lighth2TextStyle,
+              textAlign: TextAlign.center,
             ),
+
             const SizedBox(height: 60),
 
             // --- "I am a Senior" Button ---
-            _RoleButton(
-              text: 'I am a Senior',
+            PrimaryButton(
+              text: 'I am a Senior!',
               onPressed: () => onRoleSelected('senior'),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 25),
 
             // --- "I am a Volunteer" Button ---
-            _RoleButton(
-              text: 'I am a Volunteer',
+            PrimaryButton(
+              text: 'I am a Volunteer!',
               onPressed: () => onRoleSelected('volunteer'),
             ),
           ],
@@ -237,49 +227,6 @@ class RoleSelectionStep extends StatelessWidget {
     );
   }
 }
-
-/// Helper widget for the role buttons to avoid code duplication
-class _RoleButton extends StatelessWidget {
-  final String text;
-  final VoidCallback onPressed;
-  const _RoleButton({required this.text, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFF06638).withAlpha(50),
-            spreadRadius: 5,
-            blurRadius: 20,
-            offset: const Offset(0, 0),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Color(0xFFF06638),
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.0),
-          ),
-        ),
-        onPressed: onPressed,
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 18,
-            fontFamily: 'Archivo',
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ====================================================================
 // --- STEP 3: EMAIL & PASSWORD (New Widget)
 // ====================================================================
@@ -326,14 +273,6 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF192133)),
-          onPressed: widget.onPrevious,
-        ),
-      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -349,26 +288,61 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 20),
-                const Text(
-                  'Create your \nlogin',
-                  style: TextStyle(
-                    height: 1.0,
-                    color: Color(0xFF192133),
-                    fontSize: 44,
-                    fontFamily: 'Archivo',
-                    fontWeight: FontWeight.w900,
-                  ),
-                  textAlign: TextAlign.left,
+                SizedBox(height: MediaQuery.of(context).padding.top + 20),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Color(0xFF192133),
+                        size: 28,
+                      ),
+                      onPressed: widget.onPrevious,
+                    ),
+
+                    // const Text(
+                    //   'Sign Up',
+                    //   style: TextStyle(
+                    //     color: Color(0xFF192133),
+                    //     fontSize: 18,
+                    //     fontWeight: FontWeight.w600,
+                    //   ),
+                    // ),
+
+                    // A placeholder to balance the layout if needed (optional)
+                    // const SizedBox(width: 50),
+                  ],
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: 20),
+                Image(
+                  image: AssetImage('assets/images/logo3.png'),
+                  height: 80.0,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Hey senior! Great to see you here.',
+                  style: primaryh2TextStyle,
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 15),
+                Text(
+                  'We just have to know a little bit more about you. Please tell us your details!',
+                  style: primarypTextStyle,
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 30),
 
                 // --- Email ---
                 TextFormField(
+                  style: primaryInputLabelTextStyle,
                   controller: _emailController,
-                  decoration: _buildInputDecoration('Email Address'),
+                  decoration: primaryInputDecoration.copyWith(
+                    labelText: 'Email Address',
+                  ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null ||
@@ -383,8 +357,11 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
 
                 // --- Password ---
                 TextFormField(
+                  style: primaryInputLabelTextStyle,
                   controller: _passwordController,
-                  decoration: _buildInputDecoration('Password'),
+                  decoration: primaryInputDecoration.copyWith(
+                    labelText: 'Password',
+                  ),
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.trim().length < 6) {
@@ -397,8 +374,11 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
 
                 // --- Confirm Password ---
                 TextFormField(
+                  style: primaryInputLabelTextStyle,
                   controller: _confirmPasswordController,
-                  decoration: _buildInputDecoration('Confirm Password'),
+                  decoration: primaryInputDecoration.copyWith(
+                    labelText: 'Confirm Password',
+                  ),
                   obscureText: true,
                   validator: (value) {
                     if (value != _passwordController.text) {
@@ -410,36 +390,12 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
                 const SizedBox(height: 80),
 
                 // --- "Continue" Button ---
-                _RoleButton(text: 'Continue', onPressed: _trySubmitForm),
+                PrimaryButton(text: 'Continue', onPressed: _trySubmitForm),
                 const SizedBox(height: 40),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  // Helper method for consistent styling
-  InputDecoration _buildInputDecoration(String labelText) {
-    return InputDecoration(
-      fillColor: Colors.white,
-      filled: true,
-      enabledBorder: null,
-      focusedBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: Color(0xFFF06638)),
-      ),
-      errorBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.red, width: 1.0),
-      ),
-      focusedErrorBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.red, width: 2.0),
-      ),
-      labelText: labelText,
-      labelStyle: const TextStyle(
-        color: Color(0x80192133),
-        fontFamily: 'Archivo',
-        fontWeight: FontWeight.w300,
       ),
     );
   }
@@ -541,7 +497,7 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 50.0),
+        padding: const EdgeInsets.symmetric(horizontal: 80.0),
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/login2bg.png'),
@@ -571,8 +527,11 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
 
                 // --- First Name ---
                 TextFormField(
+                  style: primaryInputLabelTextStyle,
                   controller: _firstNameController,
-                  decoration: _buildInputDecoration('First Name'),
+                  decoration: primaryInputDecoration.copyWith(
+                    labelText: 'First Name',
+                  ),
                   keyboardType: TextInputType.name,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -581,12 +540,15 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 18),
 
                 // --- Last Name ---
                 TextFormField(
+                  style: primaryInputLabelTextStyle,
                   controller: _lastNameController,
-                  decoration: _buildInputDecoration('Last Name'),
+                  decoration: primaryInputDecoration.copyWith(
+                    labelText: 'Last Name',
+                  ),
                   keyboardType: TextInputType.name,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -595,12 +557,15 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 18),
 
                 // --- Phone Number ---
                 TextFormField(
+                  style: primaryInputLabelTextStyle,
                   controller: _phoneController,
-                  decoration: _buildInputDecoration('Phone Number'),
+                  decoration: primaryInputDecoration.copyWith(
+                    labelText: 'Phone Number',
+                  ),
                   keyboardType: TextInputType.phone,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -609,13 +574,14 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 18),
 
                 // --- Date of Birth ---
                 TextFormField(
+                  style: primaryInputLabelTextStyle,
                   controller: _dobController,
-                  decoration: _buildInputDecoration(
-                    'Date of Birth',
+                  decoration: primaryInputDecoration.copyWith(
+                    labelText: 'Date of Birth',
                     suffixIcon: Icon(Icons.calendar_today),
                   ),
                   readOnly: true,
@@ -627,12 +593,14 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 18),
 
                 // --- Gender ---
                 DropdownButtonFormField<String>(
                   value: _selectedGender,
-                  decoration: _buildInputDecoration('Gender'),
+                  decoration: primaryInputDecoration.copyWith(
+                    labelText: 'Gender',
+                  ),
                   hint: const Text(
                     'Select Gender',
                     style: TextStyle(
@@ -662,7 +630,7 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                 const SizedBox(height: 40),
 
                 // --- Submit Button ---
-                _RoleButton(
+                PrimaryButton(
                   text: 'Sign Up', // Final step button text
                   onPressed: _trySubmitForm,
                 ),
@@ -672,34 +640,6 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
           ),
         ),
       ),
-    );
-  }
-
-  // Helper method for consistent styling
-  InputDecoration _buildInputDecoration(
-    String labelText, {
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      fillColor: Colors.white,
-      filled: true,
-      enabledBorder: null,
-      focusedBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: Color(0xFFF06638)),
-      ),
-      errorBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.red, width: 1.0),
-      ),
-      focusedErrorBorder: const OutlineInputBorder(
-        borderSide: BorderSide(color: Colors.red, width: 2.0),
-      ),
-      labelText: labelText,
-      labelStyle: const TextStyle(
-        color: Color(0x80192133),
-        fontFamily: 'Archivo',
-        fontWeight: FontWeight.w300,
-      ),
-      suffixIcon: suffixIcon,
     );
   }
 }

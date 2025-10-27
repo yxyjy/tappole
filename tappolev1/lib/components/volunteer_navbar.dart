@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../pages/volunteer_flow/volunteer_home.dart';
 import '../pages/senior_flow/senior_activity.dart';
-import '../pages/senior_flow/senior_profile.dart';
+import '../pages/general/user_profile.dart';
 
 class VolunteerNavbar extends StatefulWidget {
   const VolunteerNavbar({super.key});
