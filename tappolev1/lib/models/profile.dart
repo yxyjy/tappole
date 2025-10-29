@@ -29,4 +29,15 @@ class UserProfile {
       gender: data['gender'],
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'role': role,
+      'first_name': firstName,
+      'last_name': lastName,
+      'phone': phone,
+      'dob': dob.toIso8601String(), // Convert DateTime to string
+      'gender': gender,
+    };
+  }
 }

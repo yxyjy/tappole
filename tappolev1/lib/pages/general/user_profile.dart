@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tappolev1/pages/general/edit_profile.dart';
 import 'package:tappolev1/services/profile_service.dart';
 import 'package:tappolev1/models/profile.dart';
 
@@ -19,84 +20,25 @@ class _SeniorProfilePageState extends State<SeniorProfilePage> {
     _profileFuture = _profileService.getProfile();
   }
 
+  void _refreshProfile() {
+    setState(() {
+      _profileFuture = _profileService.getProfile();
+    });
+  }
+
+  void _navigateToEdit(UserProfile profile) async {
+    // Navigate and WAIT for the user to return from EditProfilePage
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditProfilePage(initialProfile: profile),
+      ),
+    );
+
+    // When the user returns (after saving and popping), refresh the profile data
+    _refreshProfile();
+  }
+
   @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     body: Container(
-  //       width: double.infinity,
-  //       height: double.infinity,
-  //       padding: const EdgeInsets.symmetric(horizontal: 30.0),
-  //       decoration: const BoxDecoration(
-  //         image: DecorationImage(
-  //           image: AssetImage('assets/images/seniorhomebg.png'),
-  //           fit: BoxFit.cover,
-  //         ),
-  //       ),
-  //       child: Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           const SizedBox(height: 70),
-  //           const Center(
-  //             child: CircleAvatar(
-  //               radius: 60,
-  //               backgroundImage: NetworkImage(
-  //                 'https://via.placeholder.com/150',
-  //               ),
-  //             ),
-  //           ),
-  //           const SizedBox(height: 16),
-  //           const Center(
-  //             child: Text(
-  //               'John Doe',
-  //               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-  //             ),
-  //           ),
-  //           const SizedBox(height: 8),
-  //           const Center(
-  //             child: Text(
-  //               'john.doe@example.com',
-  //               style: TextStyle(fontSize: 16, color: Colors.grey),
-  //             ),
-  //           ),
-  //           const SizedBox(height: 24),
-  //           const Divider(),
-  //           const ListTile(
-  //             leading: Icon(Icons.phone),
-  //             title: Text('Phone'),
-  //             subtitle: Text('+1 234 567 890'),
-  //           ),
-  //           const ListTile(
-  //             leading: Icon(Icons.home),
-  //             title: Text('Address'),
-  //             subtitle: Text('123 Main St, Anytown, USA'),
-  //           ),
-  //           const ListTile(
-  //             leading: Icon(Icons.cake),
-  //             title: Text('Birthday'),
-  //             subtitle: Text('January 1, 1950'),
-  //           ),
-  //           const Spacer(),
-  //           Padding(
-  //             padding: const EdgeInsets.all(16.0),
-  //             child: SizedBox(
-  //               width: double.infinity,
-  //               child: ElevatedButton(
-  //                 onPressed: () {
-  //                   // TODO: Navigate to an edit profile page
-  //                 },
-  //                 style: ElevatedButton.styleFrom(
-  //                   padding: const EdgeInsets.symmetric(vertical: 16),
-  //                 ),
-  //                 child: const Text('Edit Details'),
-  //               ),
-  //             ),
-  //           ),
-  //           const SizedBox(height: 20),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('My Profile')),
@@ -143,6 +85,18 @@ class _SeniorProfilePageState extends State<SeniorProfilePage> {
               ListTile(
                 leading: const Icon(Icons.person),
                 title: Text(profile.role), // e.g., "senior"
+              ),
+
+              ElevatedButton.icon(
+                icon: const Icon(Icons.edit),
+                label: const Text('Edit Profile'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                ),
+                onPressed: () {
+                  // Call the navigation handler, passing the current profile data
+                  _navigateToEdit(profile);
+                },
               ),
             ],
           );

@@ -4,7 +4,7 @@ import '../models/request.dart';
 class RequestService {
   final _supabase = Supabase.instance.client;
 
-  /// Fetches the profile for the currently logged-in user
+  //1. Gets all requests made by currently logged in user
   Future<List<Request>> getRequestsBySenior() async {
     final user = _supabase.auth.currentUser;
     if (user == null) {
@@ -15,12 +15,10 @@ class RequestService {
       final response = await _supabase
           .from('requests')
           .select()
-          .eq('requested_by', user.id);
+          .eq('requested_by', user.id)
+          .order('created_at', ascending: false);
 
-      // Supabase returns a List<Map<String, dynamic>>
       final List<dynamic> dataList = response as List<dynamic>;
-
-      // Convert the list of maps to a list of Request objects
       return dataList
           .map((map) => Request.fromMap(map as Map<String, dynamic>))
           .toList();
@@ -30,38 +28,30 @@ class RequestService {
     }
   }
 
+  //2. Create a new request
   Future<void> createNewRequest({
-    required String title,
+    String? title,
     required String content,
   }) async {
-    // 1. Get the current user's ID
     final user = _supabase.auth.currentUser;
     if (user == null) {
       throw Exception('User must be logged in to create a request.');
     }
 
-    // NOTE: We rely on the database to handle req_id, created_at,
-    // and updated_at (using SQL default values or triggers).
-
     try {
-      // 2. Prepare the data payload
       final requestData = {
-        // req_id is omitted; rely on DB default (UUID)
-        'requested_by': user.id, // Set to the current logged-in user's ID
-        'accepted_by': null, // Must be null initially
-        'req_title': title,
+        'requested_by': user.id,
+        'accepted_by': null,
+        'req_title': title ?? 'Help Request',
         'req_content': content,
-        'req_status': 'pending', // Set initial status (must match your ENUM)
-        // created_at / updated_at are omitted; rely on DB default (now())
+        'req_status': 'pending',
       };
 
-      // 3. Execute the insert command
       final response = await _supabase
           .from('requests')
           .insert(requestData)
-          .select(); // Use .select() to get the inserted record back (optional)
+          .select();
 
-      // 4. Handle any Supabase-specific errors
       if (response == null || response.isEmpty) {
         throw Exception('Insert failed or no data returned.');
       }

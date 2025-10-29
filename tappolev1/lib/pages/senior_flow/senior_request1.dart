@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tappolev1/components/primary_button.dart';
+import 'package:tappolev1/pages/senior_flow/senior_activity.dart';
+import 'package:tappolev1/services/request_service.dart';
+import 'package:tappolev1/theme/app_styles.dart'; // Import your service file
 
 class SeniorRequest1Page extends StatefulWidget {
   const SeniorRequest1Page({super.key});
@@ -7,6 +11,63 @@ class SeniorRequest1Page extends StatefulWidget {
 }
 
 class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
+  // 1. Controllers and State
+  final _requestService = RequestService(); // Instantiate the service
+  final TextEditingController _contentController = TextEditingController();
+  // ignore: prefer_final_fields
+  String _requestTitle =
+      "Help Request"; // Placeholder or result of speech-to-text
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  // 2. Function to handle form submission and service call
+  Future<void> _submitRequest() async {
+    // Basic validation
+    if (_contentController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter your message or speak your request.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Call the service method to insert the new request
+      await _requestService.createNewRequest(
+        title: _requestTitle,
+        content: _contentController.text.trim(),
+      );
+
+      // Show success message and navigate away
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Request submitted successfully!')),
+      );
+      // Navigate back or to the activity page after submission
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const SeniorActivityPage()),
+      );
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Submission failed: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,99 +81,64 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
             fit: BoxFit.cover,
           ),
         ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 80), // Added top padding
+              Text(
+                'Hold the button and speak',
+                style: primaryh2TextStyle,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 50),
+              Text(
+                'Tell us - and the volunteers what you need!',
+                style: primarypTextStyle,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
 
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Hold the button and speak',
-              style: TextStyle(
-                height: 1.0,
-                color: Color(0xFF192133),
-                fontSize: 44,
-                fontFamily: 'Archivo',
-                fontWeight: FontWeight.w900,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 50),
-            const Text(
-              'Tell us - and the volunteers what you need!',
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.05,
-                fontFamily: 'Archivo',
-                fontWeight: FontWeight.w300,
-                color: Color(0xFF192133),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-
-            Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFF06638).withAlpha(50),
-                    spreadRadius: 5,
-                    blurRadius: 20,
-                    offset: const Offset(0, 0),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
+              ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF06638),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 70.0,
-                    vertical: 70.0,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(100.0),
-                  ),
+                  shape: const CircleBorder(),
+                  padding: const EdgeInsets.all(20),
+                  backgroundColor: Color.fromARGB(255, 255, 125, 82),
                 ),
                 onPressed: () {
-                  // Debug: confirm the button press reached here
+                  // TODO: Implement actual speech-to-text logic here
                 },
                 child: Image.asset('assets/images/miclogo.png'),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            const TextField(
-              decoration: InputDecoration(
-                fillColor: Colors.white,
-                filled: true,
-                enabledBorder: null,
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFF06638)),
+              TextField(
+                controller: _contentController,
+                minLines: 3,
+                maxLines: 5,
+                decoration: primaryInputDecoration.copyWith(
+                  hintText: 'Or type your request here...',
+                  floatingLabelBehavior: FloatingLabelBehavior.auto,
                 ),
-                labelText: 'Your Message',
-                labelStyle: TextStyle(
-                  color: Color(0x80192133),
-                  fontFamily: 'Archivo',
-                  fontWeight: FontWeight.w300,
-                ),
+                keyboardType: TextInputType.text,
               ),
-              keyboardType: TextInputType.text,
-            ),
 
-            const SizedBox(height: 80),
+              const SizedBox(height: 40),
 
-            const Text(
-              'Back',
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.05,
-                fontFamily: 'Archivo',
-                fontWeight: FontWeight.w300,
-                color: Color(0xFF192133),
+              PrimaryButton(text: 'Confirm Request', onPressed: _submitRequest),
+
+              const SizedBox(height: 20),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Back', style: primarypTextStyle),
               ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

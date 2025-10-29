@@ -28,7 +28,20 @@ class ProfileService {
   }
 
   // You can add other profile-related methods here later...
-  // Future<void> updateProfile(UserProfile profile) async {
-  //   ...
-  // }
+  Future<void> updateProfile(UserProfile profile) async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+
+    try {
+      await _supabase
+          .from('profiles')
+          .update(profile.toMap())
+          .eq('id', user.id);
+    } catch (e) {
+      print('Error updating profile: $e');
+      throw Exception('Could not update profile');
+    }
+  }
 }

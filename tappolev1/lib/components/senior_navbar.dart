@@ -13,7 +13,6 @@ class SeniorNavBar extends StatefulWidget {
 class _SeniorNavBarState extends State<SeniorNavBar> {
   int _selectedIndex = 1;
 
-  // Placeholder pages
   static final List<Widget> _widgetOptions = <Widget>[
     const SeniorActivityPage(),
     const SeniorHomePage(),
@@ -70,16 +69,13 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
     // 1. Conditional Widget Building
     Widget iconWidget;
     if (iconOrImagePath is IconData) {
-      // If it's an IconData, build a standard Icon
       iconWidget = Icon(iconOrImagePath, color: Colors.white);
     } else if (iconOrImagePath is String) {
-      // If it's a String, treat it as an asset path and build an Image.asset
       iconWidget = Image.asset(
         iconOrImagePath,
-        width: 24.0, // Set an appropriate size for the image icon
+        width: 24.0,
         height: 24.0,
-        color: Colors
-            .white, // Optional: You might need to set a color if the image is a vector/SVG that supports color overriding, or you can omit this.
+        color: Colors.white,
       );
     } else {
       // Fallback/Error case
