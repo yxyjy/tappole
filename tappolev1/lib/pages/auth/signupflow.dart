@@ -125,8 +125,6 @@ class _SignupflowState extends State<Signupflow> {
     }
   }
 
-  // --- Build Method (Conditional Rendering) ---
-
   @override
   Widget build(BuildContext context) {
     Widget currentWidget;
@@ -147,6 +145,7 @@ class _SignupflowState extends State<Signupflow> {
         currentWidget = UserDetailsStep(
           onSubmitted: _onUserDetailsSubmitted,
           onPrevious: () => _nextStep(SignupSteps.emailPasswordEntry),
+          role: _role,
         );
         break;
     }
@@ -171,7 +170,7 @@ class _SignupflowState extends State<Signupflow> {
 }
 
 // ====================================================================
-// --- STEP 2: ROLE SELECTION (New Widget)
+//ROLE SELECTION
 // ====================================================================
 
 class RoleSelectionStep extends StatelessWidget {
@@ -228,7 +227,7 @@ class RoleSelectionStep extends StatelessWidget {
   }
 }
 // ====================================================================
-// --- STEP 3: EMAIL & PASSWORD (New Widget)
+// 3. EMAIL & PASSWORD
 // ====================================================================
 
 class SignupEmailPasswordStep extends StatefulWidget {
@@ -324,13 +323,13 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  'Hey senior! Great to see you here.',
+                  'Please enter your \nemail & password',
                   style: primaryh2TextStyle,
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 15),
                 Text(
-                  'We just have to know a little bit more about you. Please tell us your details!',
+                  'Let\'s set up your account!',
                   style: primarypTextStyle,
                   textAlign: TextAlign.center,
                 ),
@@ -402,7 +401,7 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
 }
 
 // ====================================================================
-// --- STEP 4: USER DETAILS (Modified SignupFormStep)
+// 4. USER DETAILS
 // ====================================================================
 
 class UserDetailsStep extends StatefulWidget {
@@ -415,11 +414,13 @@ class UserDetailsStep extends StatefulWidget {
   )
   onSubmitted;
   final VoidCallback onPrevious;
+  final String role;
 
   const UserDetailsStep({
     super.key,
     required this.onSubmitted,
     required this.onPrevious,
+    required this.role,
   });
 
   @override
@@ -486,14 +487,6 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF192133)),
-          onPressed: widget.onPrevious,
-        ),
-      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -511,19 +504,39 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
-                const Text(
-                  'Tell us about \nyourself',
-                  style: TextStyle(
-                    height: 1.0,
-                    color: Color(0xFF192133),
-                    fontSize: 44,
-                    fontFamily: 'Archivo',
-                    fontWeight: FontWeight.w900,
-                  ),
-                  textAlign: TextAlign.left,
+                SizedBox(height: MediaQuery.of(context).padding.top + 20),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Color(0xFF192133),
+                        size: 28,
+                      ),
+                      onPressed: widget.onPrevious,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: 20),
+                Image(
+                  image: AssetImage('assets/images/logo3.png'),
+                  height: 80.0,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Hey ${widget.role}, great to see you here!',
+                  style: primaryh2TextStyle,
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 15),
+                Text(
+                  'We just have to know a little bit more about you. Please tell us your details!',
+                  style: primarypTextStyle,
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 30),
 
                 // --- First Name ---
                 TextFormField(

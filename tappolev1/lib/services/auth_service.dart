@@ -29,23 +29,19 @@ class AuthService {
 
   //get current user
   User? getCurrentUser() {
-    final session = _supabase.auth.currentSession;
-    final user = session?.user;
-    return user;
+    return _supabase.auth.currentUser;
   }
 
   Future<String?> getCurrentUserRole() async {
-    // 1. Get the current user
     final user = _supabase.auth.currentUser;
 
-    // 2. If no user is logged in, return null
     if (user == null) {
       return null;
     }
 
     try {
-      // 3. Fetch data from the 'profiles' table
       final data = await _supabase
+          .schema('public')
           .from('profiles')
           .select('role') // Only select the 'role' column
           .eq('id', user.id) // Find the row where 'id' matches the user's ID

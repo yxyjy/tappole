@@ -37,7 +37,7 @@ final primaryInputLabelTextStyle = TextStyle(
 //LINK TEXT STYLES
 final primaryLinkTextStyle = TextStyle(
   fontSize: 15.0,
-  color: Color(0xFFF06638),
+  color: Color.fromARGB(255, 255, 125, 82),
   fontWeight: FontWeight.bold,
   decoration: TextDecoration.underline,
   fontFamily: 'Archivo',
@@ -68,3 +68,20 @@ final primarypTextStyle = TextStyle(
   fontFamily: 'Archivo',
   fontWeight: FontWeight.w100,
 );
+
+final lightpTextStyle = TextStyle(
+  height: 1.0,
+  color: Color.fromARGB(255, 255, 255, 255),
+  fontSize: 15,
+  fontFamily: 'Archivo',
+  fontWeight: FontWeight.w100,
+);
+
+final List<BoxShadow> primaryButtonShadow = [
+  BoxShadow(
+    color: Color(0xFF192133),
+    blurRadius: 20,
+    spreadRadius: 0,
+    offset: Offset(0, 0),
+  ),
+];

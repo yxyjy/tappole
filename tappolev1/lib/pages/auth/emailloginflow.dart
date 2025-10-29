@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tappolev1/components/primary_button.dart';
 import 'package:tappolev1/pages/auth/otploginflow.dart';
 import 'package:tappolev1/services/auth_service.dart';
 import '../../components/senior_navbar.dart';
@@ -122,51 +123,23 @@ class WelcomeStep extends StatelessWidget {
           children: <Widget>[
             const SizedBox(height: 250.0),
             Image.asset('assets/images/logo.png', height: 150.0),
-            const SizedBox(height: 100.0),
+            const SizedBox(height: 80.0),
             Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFF06638).withAlpha(50),
-                    spreadRadius: 5,
-                    blurRadius: 20,
-                    offset: const Offset(0, 0),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFF06638),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 50.0,
-                    vertical: 15.0,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
+              height: 50,
+              width: 180,
+              decoration: BoxDecoration(boxShadow: primaryButtonShadow),
+              child: PrimaryButton(
+                text: 'Login',
                 onPressed: () {
                   onNext();
                 },
-                child: const Text(
-                  'Login',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontFamily: 'Archivo',
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
               ),
             ),
-            const SizedBox(height: 24.0),
+            const SizedBox(height: 26.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                const Text(
-                  "Don't have an account yet? ",
-                  style: TextStyle(color: Colors.white, fontFamily: 'Archivo'),
-                ),
+                Text("Don't have an account yet? ", style: lightpTextStyle),
                 GestureDetector(
                   onTap: () {
                     Navigator.of(context).push(Signupflow.route());
@@ -253,40 +226,20 @@ class _EmailPasswordStepState extends State<EmailPasswordStep> {
             const SizedBox(height: 20),
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(
-                fillColor: Colors.white,
-                filled: true,
-                enabledBorder: null,
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFF06638)),
-                ),
+              decoration: primaryInputDecoration.copyWith(
                 labelText: 'Email Address',
-                labelStyle: TextStyle(
-                  color: Color(0x80192133),
-                  fontFamily: 'Archivo',
-                  fontWeight: FontWeight.w300,
-                ),
               ),
+              style: primaryInputLabelTextStyle,
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 10),
             TextField(
+              decoration: primaryInputDecoration.copyWith(
+                labelText: 'Password',
+              ),
+              style: primaryInputLabelTextStyle,
               controller: _passwordController,
               obscureText: true,
-              decoration: InputDecoration(
-                fillColor: Colors.white,
-                filled: true,
-                enabledBorder: null,
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFF06638)),
-                ),
-                labelText: 'Password',
-                labelStyle: TextStyle(
-                  color: Color(0x80192133),
-                  fontFamily: 'Archivo',
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
             ),
             const SizedBox(height: 80),
 
@@ -301,32 +254,14 @@ class _EmailPasswordStepState extends State<EmailPasswordStep> {
                   ),
                 ],
               ),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFF06638),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0,
-                    vertical: 15.0,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
+              child: PrimaryButton(
+                text: 'Login',
                 onPressed: () {
                   widget.onSubmitted(
                     _emailController.text.trim(),
                     _passwordController.text,
                   );
                 },
-                child: const Text(
-                  'Log In',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontFamily: 'Archivo',
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
               ),
             ),
 
