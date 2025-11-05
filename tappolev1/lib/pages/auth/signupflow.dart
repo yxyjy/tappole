@@ -438,10 +438,10 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
   DateTime? _selectedDate;
   String? _selectedGender;
   final List<String> _genderOptions = [
-    'Male',
-    'Female',
-    'Other',
-    'Prefer not to say',
+    'male',
+    'female',
+    'fther',
+    'prefer not to say',
   ];
 
   @override

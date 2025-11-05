@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String text;
@@ -11,8 +12,8 @@ class PrimaryButton extends StatelessWidget {
       decoration: BoxDecoration(
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFF06638).withAlpha(60),
-            spreadRadius: 10,
+            color: AppColors.primaryOrange.withAlpha(20),
+            spreadRadius: 5,
             blurRadius: 20,
             offset: const Offset(0, 0),
           ),
@@ -20,7 +21,7 @@ class PrimaryButton extends StatelessWidget {
       ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Color(0xFFF06638),
+          backgroundColor: AppColors.primaryOrange,
           padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),

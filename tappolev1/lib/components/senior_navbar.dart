@@ -16,7 +16,7 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
   static final List<Widget> _widgetOptions = <Widget>[
     const SeniorActivityPage(),
     const SeniorHomePage(),
-    const SeniorProfilePage(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {

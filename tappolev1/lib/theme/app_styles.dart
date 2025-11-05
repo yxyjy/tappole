@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 //INPUT FIELD STYLES
 final primaryInputDecoration = InputDecoration(
   floatingLabelBehavior: FloatingLabelBehavior.always,
   labelStyle: TextStyle(
-    color: Color(0xFFF06638),
+    color: AppColors.primaryOrange,
     fontFamily: 'Archivo',
     fontWeight: FontWeight.w200,
   ),
@@ -20,34 +21,51 @@ final primaryInputDecoration = InputDecoration(
   ),
   enabledBorder: OutlineInputBorder(
     borderRadius: BorderRadius.circular(8.0),
-    borderSide: const BorderSide(color: Color(0x33192133), width: 1.0),
+    borderSide: const BorderSide(
+      color: AppColors.lowerAlphaDarkBlue,
+      width: 1.0,
+    ),
   ),
   focusedBorder: OutlineInputBorder(
     borderRadius: BorderRadius.circular(8.0),
-    borderSide: const BorderSide(color: Color(0xFFF06638), width: 2.0),
+    borderSide: const BorderSide(color: AppColors.primaryOrange, width: 2.0),
   ),
 );
 
 final primaryInputLabelTextStyle = TextStyle(
-  color: Color.fromARGB(255, 25, 33, 51),
+  color: AppColors.primaryDarkBlue,
   fontFamily: 'Archivo',
   fontWeight: FontWeight.w200,
+);
+
+final orangeLabelTextStyle = TextStyle(
+  color: AppColors.primaryOrange,
+  fontFamily: 'Archivo',
+  fontSize: 12.0,
+  fontWeight: FontWeight.w200,
+);
+
+final mediumAlphaInputTextStyle = TextStyle(
+  color: AppColors.mediumAlphaDarkBlue,
+  fontFamily: 'Archivo',
+  fontWeight: FontWeight.w200,
+  fontSize: 13.0,
 );
 
 //LINK TEXT STYLES
 final primaryLinkTextStyle = TextStyle(
   fontSize: 15.0,
-  color: Color.fromARGB(255, 255, 125, 82),
+  color: AppColors.primaryOrange,
   fontWeight: FontWeight.bold,
   decoration: TextDecoration.underline,
   fontFamily: 'Archivo',
-  decorationColor: const Color(0xFFF06638),
+  decorationColor: AppColors.primaryOrange,
 );
 
 //TEXT STYLES
 final primaryh2TextStyle = TextStyle(
   height: 1.0,
-  color: Color(0xFF192133),
+  color: AppColors.primaryDarkBlue,
   fontSize: 44,
   fontFamily: 'Archivo',
   fontWeight: FontWeight.w900,
@@ -55,7 +73,7 @@ final primaryh2TextStyle = TextStyle(
 
 final lighth2TextStyle = TextStyle(
   fontSize: 44.0,
-  color: Color.fromARGB(255, 255, 255, 255),
+  color: AppColors.white,
   fontWeight: FontWeight.w900,
   fontFamily: 'Archivo',
   height: 1.0,
@@ -63,7 +81,7 @@ final lighth2TextStyle = TextStyle(
 
 final primarypTextStyle = TextStyle(
   height: 1.0,
-  color: Color(0xFF192133),
+  color: AppColors.primaryDarkBlue,
   fontSize: 15,
   fontFamily: 'Archivo',
   fontWeight: FontWeight.w100,
@@ -71,7 +89,7 @@ final primarypTextStyle = TextStyle(
 
 final lightpTextStyle = TextStyle(
   height: 1.0,
-  color: Color.fromARGB(255, 255, 255, 255),
+  color: AppColors.white,
   fontSize: 15,
   fontFamily: 'Archivo',
   fontWeight: FontWeight.w100,
@@ -79,7 +97,7 @@ final lightpTextStyle = TextStyle(
 
 final List<BoxShadow> primaryButtonShadow = [
   BoxShadow(
-    color: Color(0xFF192133),
+    color: AppColors.lowerAlphaDarkBlue,
     blurRadius: 20,
     spreadRadius: 0,
     offset: Offset(0, 0),

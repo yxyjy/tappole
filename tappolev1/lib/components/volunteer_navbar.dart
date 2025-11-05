@@ -17,7 +17,7 @@ class _VolunteerNavbarState extends State<VolunteerNavbar> {
   static final List<Widget> _widgetOptions = <Widget>[
     const SeniorActivityPage(),
     const VolunteerHomePage(),
-    const SeniorProfilePage(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
