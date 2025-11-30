@@ -67,68 +67,104 @@ class _ProfilePageState extends State<ProfilePage> {
             return Stack(
               children: [
                 Positioned.fill(
-                  top: 150,
+                  top: 70,
                   child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16.0),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20.0),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withAlpha(20),
+                          color: AppColors.lowerAlphaDarkBlue,
                           blurRadius: 10,
                           offset: const Offset(0, -5),
                         ),
                       ],
                     ),
-                    child: ListView(
+                    child: SingleChildScrollView(
                       padding: const EdgeInsets.only(
-                        top: 120.0,
+                        top: 87.0,
                         left: 16.0,
                         right: 16.0,
                       ),
-                      children: [
-                        Text(
-                          'Hey, ${profile.firstName}!',
-                          textAlign: TextAlign.center,
-                          style: primaryh2TextStyle,
-                        ),
-                        const SizedBox(height: 30),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 26.0),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Hey, ${profile.firstName}!',
+                              textAlign: TextAlign.center,
+                              style: primaryh2TextStyle.copyWith(fontSize: 30),
+                            ),
+                            const SizedBox(height: 15),
 
-                        // Profile Details
-                        _buildProfileDetailTile(
-                          icon: Icons.phone,
-                          title: 'Phone',
-                          subtitle: profile.phone,
-                        ),
-                        _buildProfileDetailTile(
-                          icon: Icons.cake,
-                          title: 'Birthday',
-                          subtitle:
-                              '${profile.dob.day}/${profile.dob.month}/${profile.dob.year}',
-                        ),
-                        _buildProfileDetailTile(
-                          icon: Icons.person,
-                          title: 'Role',
-                          subtitle: profile.role.toUpperCase(),
-                        ),
+                            // Profile Details
+                            _buildProfileDetailTile(
+                              icon: Icons.person,
+                              title: 'First Name',
+                              subtitle: profile.firstName,
+                            ),
+                            _buildProfileDetailTile(
+                              icon: Icons.person,
+                              title: 'Last Name',
+                              subtitle: profile.lastName,
+                            ),
+                            _buildProfileDetailTile(
+                              icon: Icons.mail,
+                              title: 'Email',
+                              subtitle: 'email placeholder',
+                              //TODO: use join query to get email from auth table
+                            ),
+                            _buildProfileDetailTile(
+                              icon: Icons.phone,
+                              title: 'Phone Number',
+                              subtitle: profile.phone,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start, // Align tops
+                              children: [
+                                // 1. Wrap the first tile in Expanded
+                                Expanded(
+                                  child: _buildProfileDetailTile(
+                                    icon: Icons.cake,
+                                    title: 'Date of Birth',
+                                    subtitle:
+                                        '${profile.dob.day}/${profile.dob.month}/${profile.dob.year}',
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 16,
+                                ), // Add spacing between them
+                                // 2. Wrap the second tile in Expanded
+                                Expanded(
+                                  child: _buildProfileDetailTile(
+                                    icon: Icons.person,
+                                    title: 'Role',
+                                    subtitle: profile.role.toUpperCase(),
+                                  ),
+                                ),
+                              ],
+                            ),
 
-                        const SizedBox(height: 40),
+                            const SizedBox(height: 40),
 
-                        // Edit Profile Button
-                        PrimaryOutlinedButton(
-                          text: 'Edit Profile',
-                          onPressed: () {
-                            _navigateToEdit(profile);
-                          },
+                            // Edit Profile Button
+                            PrimaryOutlinedButton(
+                              text: 'Edit Profile',
+                              onPressed: () {
+                                _navigateToEdit(profile);
+                              },
+                            ),
+                            const SizedBox(height: 30),
+                          ],
                         ),
-                        const SizedBox(height: 30),
-                      ],
+                      ),
                     ),
                   ),
                 ),
 
-                // 2. FIXED HEADER (Settings Button)
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 10,
                   left: 10,
@@ -144,22 +180,21 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
 
-                // 3. AVATAR (Highest Z-Index)
                 Positioned(
-                  top: 70, // Adjust this to control the vertical position
+                  top: 30, // Adjust this to control the vertical position
                   left: 0,
                   right: 0,
                   child: Center(
                     child: Container(
-                      width: 180,
-                      height: 180,
+                      width: 100,
+                      height: 100,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white,
-                        border: Border.all(color: Colors.white, width: 4),
+                        color: AppColors.white,
+                        border: Border.all(color: AppColors.white, width: 4),
                         boxShadow: const [
                           BoxShadow(
-                            color: Colors.black26,
+                            color: AppColors.lowerAlphaDarkBlue,
                             blurRadius: 10,
                             offset: Offset(0, 5),
                           ),
@@ -187,7 +222,7 @@ class _ProfilePageState extends State<ProfilePage> {
     required String subtitle,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -198,7 +233,7 @@ class _ProfilePageState extends State<ProfilePage> {
             decoration: BoxDecoration(
               border: Border.all(
                 color: AppColors.lowerAlphaDarkBlue,
-                width: 0.7,
+                width: 0.75,
               ),
               borderRadius: BorderRadius.circular(10.0),
             ),
@@ -206,7 +241,7 @@ class _ProfilePageState extends State<ProfilePage> {
             // 2. Add Padding inside the border
             padding: const EdgeInsets.symmetric(
               horizontal: 12.0,
-              vertical: 10.0,
+              vertical: 8.0,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.max,

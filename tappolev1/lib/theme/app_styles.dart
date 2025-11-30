@@ -15,7 +15,7 @@ final primaryInputDecoration = InputDecoration(
   border: OutlineInputBorder(
     borderRadius: BorderRadius.circular(8.0),
     borderSide: const BorderSide(
-      color: Color.fromARGB(0, 25, 33, 51),
+      color: AppColors.lowerAlphaDarkBlue,
       width: 1.0,
     ),
   ),
