@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tappolev1/components/primary_button.dart';
+import 'package:tappolev1/pages/auth/emailloginflow.dart';
 import 'package:tappolev1/pages/general/edit_profile.dart';
+import 'package:tappolev1/services/auth_service.dart';
 import 'package:tappolev1/services/profile_service.dart';
 import 'package:tappolev1/models/profile.dart';
 import 'package:tappolev1/theme/app_styles.dart';
@@ -14,6 +17,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final ProfileService _profileService = ProfileService();
+  final AuthService _authService = AuthService();
   late Future<UserProfile> _profileFuture;
 
   @override
@@ -158,6 +162,27 @@ class _ProfilePageState extends State<ProfilePage> {
                               },
                             ),
                             const SizedBox(height: 30),
+
+                            PrimaryButton(
+                              text: "Log Out",
+                              onPressed: () async {
+                                // 1. Perform the sign-out
+                                await _authService.signOut();
+
+                                // 2. Check if the widget is still on screen (good practice for async context)
+                                if (context.mounted) {
+                                  // 3. Navigate to Login and remove all previous routes (so they can't 'back' into the app)
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const Emailloginflow(),
+                                    ), // Replace with your Login/Auth widget
+                                    (route) =>
+                                        false, // This predicate removes all previous routes
+                                  );
+                                }
+                              },
+                            ),
                           ],
                         ),
                       ),

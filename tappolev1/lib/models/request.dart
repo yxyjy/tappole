@@ -9,6 +9,7 @@ class Request {
   final String req_status;
   final DateTime created_at;
   final DateTime? updated_at;
+  final String? senior_name; // Optional field for senior's name
 
   Request({
     required this.req_id,
@@ -19,9 +20,20 @@ class Request {
     required this.req_status,
     required this.created_at,
     this.updated_at,
+    this.senior_name,
   });
 
   factory Request.fromMap(Map<String, dynamic> data) {
+    String? fetchedName;
+    if (data['profiles'] != null) {
+      final profileData = data['profiles'];
+      // Handle case where it might be a list or a map depending on DB relationship
+      // Usually for One-to-One it's a Map:
+      if (profileData is Map) {
+        fetchedName = profileData['first_name'];
+      }
+    }
+
     return Request(
       req_id: data['req_id'] as String,
       requested_by: data['requested_by'] as String,
@@ -33,6 +45,7 @@ class Request {
       updated_at: data['updated_at'] != null
           ? DateTime.parse(data['updated_at'] as String)
           : null,
+      senior_name: fetchedName,
     );
   }
 }

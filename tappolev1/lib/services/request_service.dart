@@ -65,4 +65,30 @@ class RequestService {
       throw Exception('Failed to create request: ${e.toString()}');
     }
   }
+
+  // 3. Gets all pending requests for Volunteers to view and accept
+  Future<List<Request>> getPendingRequestsForVolunteers() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+
+    try {
+      final response = await _supabase
+          .from('requests')
+          .select('*, profiles(first_name)')
+          .eq('req_status', 'pending')
+          .isFilter('accepted_by', null)
+          .order('created_at', ascending: false);
+
+      final List<dynamic> dataList = response as List<dynamic>;
+
+      return dataList
+          .map((map) => Request.fromMap(map as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error fetching volunteer requests: $e');
+      throw Exception('Could not fetch volunteer requests');
+    }
+  }
 }
