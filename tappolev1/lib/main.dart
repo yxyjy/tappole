@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tappolev1/pages/auth/emailloginflow.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> main() async {
   await Supabase.initialize(
     url: 'https://poyqpdeqayeuxpxzccas.supabase.co',
@@ -18,8 +20,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
       home: Emailloginflow(),
     );
   }

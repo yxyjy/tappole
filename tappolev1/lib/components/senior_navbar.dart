@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../pages/senior_flow/senior_home.dart';
 import '../pages/senior_flow/senior_activity.dart';
 import '../pages/general/user_profile.dart';
+import '../services/call_listener_service.dart';
+import '../services/auth_service.dart';
 
 class SeniorNavBar extends StatefulWidget {
   const SeniorNavBar({super.key});
@@ -11,6 +13,27 @@ class SeniorNavBar extends StatefulWidget {
 }
 
 class _SeniorNavBarState extends State<SeniorNavBar> {
+  final AuthService authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 1. Get current user ID
+    final userId = authService.getCurrentUserId();
+
+    // 2. Start the global listener
+    if (userId != null) {
+      callListener.startListening(userId);
+    }
+  }
+
+  @override
+  void dispose() {
+    callListener.stopListening();
+    super.dispose();
+  }
+
   int _selectedIndex = 1;
 
   static final List<Widget> _widgetOptions = <Widget>[

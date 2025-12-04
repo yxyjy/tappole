@@ -76,7 +76,7 @@ class RequestService {
     try {
       final response = await _supabase
           .from('requests')
-          .select('*, profiles(first_name)')
+          .select('*, profiles!requests_requested_by_fkey(first_name)')
           .eq('req_status', 'pending')
           .isFilter('accepted_by', null)
           .order('created_at', ascending: false);

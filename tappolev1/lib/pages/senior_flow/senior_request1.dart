@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tappolev1/components/primary_button.dart';
-import 'package:tappolev1/pages/senior_flow/senior_activity.dart';
+import 'package:tappolev1/components/senior_navbar.dart';
 import 'package:tappolev1/services/request_service.dart';
 import 'package:tappolev1/theme/app_styles.dart'; // Import your service file
 
@@ -47,15 +47,14 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
         title: _requestTitle,
         content: _contentController.text.trim(),
       );
-
       // Show success message and navigate away
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Request submitted successfully!')),
       );
       // Navigate back or to the activity page after submission
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => const SeniorActivityPage()),
-      );
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => const SeniorNavBar()));
     } catch (e) {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(

@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/call_listener_service.dart';
 
 class AuthService {
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -24,6 +25,8 @@ class AuthService {
 
   ///Signs out
   Future<void> signOut() async {
+    callListener.stopListening();
+
     await _supabase.auth.signOut();
   }
 
@@ -54,5 +57,11 @@ class AuthService {
       print('Error fetching user role: $e');
       return null;
     }
+  }
+
+  //get current user id
+  String? getCurrentUserId() {
+    final user = _supabase.auth.currentUser;
+    return user?.id;
   }
 }
