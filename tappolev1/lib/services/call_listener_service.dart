@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../main.dart'; // Import your navigatorKey
-import '../pages/video_call/video_call_page.dart'; // Import your video page
+import '../main.dart'; // Ensure this exposes your global 'navigatorKey'
+import '../pages/video_call/video_call_page.dart';
 
 class CallListenerService {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final _supabase = Supabase.instance.client;
   RealtimeChannel? _channel;
 
-  // Start listening for calls for a specific senior
+  /// Start listening for incoming calls for a specific senior.
+  /// Call this in your SeniorNavBar initState.
   void startListening(String seniorId) {
-    // Prevent duplicate listeners
+    // 1. Prevent duplicate listeners
     if (_channel != null) return;
 
     print("🎧 Started listening for calls for Senior: $seniorId");
@@ -18,48 +19,57 @@ class CallListenerService {
 
     _channel!
         .onPostgresChanges(
-          event: PostgresChangeEvent
-              .insert, // 1. Typed Enum instead of string 'INSERT'
+          event: PostgresChangeEvent.insert, // Listen for NEW calls
           schema: 'public',
           table: 'video_calls',
           filter: PostgresChangeFilter(
-            // 2. Typed Filter object
             type: PostgresChangeFilterType.eq,
-            column: 'received_by',
+            column: 'received_by', // Only listen if I am the receiver
             value: seniorId,
           ),
           callback: (payload) {
-            // 3. Callback is now a named parameter
-            final newCallRecord =
-                payload.newRecord; // Helper to get the 'new' map
-            final roomUrl = newCallRecord['room_url'];
-
-            if (roomUrl != null) {
-              print("📞 Incoming call detected! Room: $roomUrl");
-              navigatorKey.currentState?.push(
-                MaterialPageRoute(builder: (_) => VideoCallPage(url: roomUrl)),
-              );
-            }
+            // 2. Trigger the handler with the new data
+            print("🔔 Incoming call event received!");
+            _handleIncomingCall(payload.newRecord);
           },
         )
         .subscribe();
   }
 
-  void _handleIncomingCall(String url) {
-    // 💡 THE MAGIC: Use the global key to navigate without context
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (_) => VideoCallPage(url: url)),
-    );
+  /// Handles the navigation logic when a call is detected
+  void _handleIncomingCall(Map<String, dynamic> record) {
+    // In our Zego setup, the 'request_id' acts as the unique Room/Call ID
+    final String? callId = record['request_id'];
+    final currentUser = _supabase.auth.currentUser;
+
+    if (callId != null && currentUser != null) {
+      print("📞 Starting Call UI. Call ID: $callId");
+
+      // 3. Use global navigator key to push the page
+      navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => VideoCallPage(
+            callId: callId,
+            userId: currentUser.id,
+            // Try to get the real name from metadata, fallback to 'Senior'
+            userName: currentUser.userMetadata?['first_name'] ?? 'Senior',
+          ),
+        ),
+      );
+    } else {
+      print("⚠️ Call detected but missing callId or User session.");
+    }
   }
 
-  // Stop listening (call this on logout)
+  /// Stop listening (Call this on Logout)
   void stopListening() {
     if (_channel != null) {
+      print("🛑 Stopped listening for calls.");
       _supabase.removeChannel(_channel!);
       _channel = null;
     }
   }
 }
 
-// Create a global instance for easy access
+// Global instance
 final callListener = CallListenerService();

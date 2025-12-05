@@ -11,7 +11,7 @@ class SeniorActivityPage extends StatefulWidget {
   }
 
   @override
-  _SeniorActivityPageState createState() => _SeniorActivityPageState();
+  State<SeniorActivityPage> createState() => _SeniorActivityPageState();
 }
 
 class _SeniorActivityPageState extends State<SeniorActivityPage> {

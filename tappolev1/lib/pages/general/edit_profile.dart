@@ -4,8 +4,6 @@ import 'package:tappolev1/services/profile_service.dart';
 import 'package:tappolev1/models/profile.dart';
 import 'package:tappolev1/theme/app_styles.dart';
 import 'package:tappolev1/theme/app_colors.dart';
-import '../../theme/app_colors.dart';
-import '../../components/primary_button.dart';
 
 class EditProfilePage extends StatefulWidget {
   final UserProfile initialProfile;

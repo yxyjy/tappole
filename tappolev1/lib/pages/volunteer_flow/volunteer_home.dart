@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/request_service.dart';
 import '../../models/request.dart';
 import '../../theme/app_styles.dart';
 import '../../theme/app_colors.dart';
+import '../video_call/video_call_page.dart';
 
 class VolunteerHomePage extends StatefulWidget {
   const VolunteerHomePage({super.key});
 
   @override
-  _VolunteerHomePageState createState() => _VolunteerHomePageState();
+  State<VolunteerHomePage> createState() => _VolunteerHomePageState();
 }
 
 class _VolunteerHomePageState extends State<VolunteerHomePage> {
   late final RequestService _requestService;
   late Future<List<Request>> _pendingRequestsFuture;
 
+  late RealtimeChannel _requestsChannel;
+
   @override
   void initState() {
     super.initState();
     _requestService = RequestService();
-    // Assuming you implemented this method in the previous step
     _pendingRequestsFuture = _requestService.getPendingRequestsForVolunteers();
+
+    _listenForRequestChanges();
   }
 
   Future<void> _refreshRequests() async {
@@ -28,6 +33,22 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
       _pendingRequestsFuture = _requestService
           .getPendingRequestsForVolunteers();
     });
+  }
+
+  void _listenForRequestChanges() {
+    _requestsChannel = Supabase.instance.client.channel('public:requests');
+
+    _requestsChannel
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'requests',
+          callback: (payload) {
+            print("🔔 Request Table Updated! Refreshing UI...");
+            _refreshRequests();
+          },
+        )
+        .subscribe();
   }
 
   @override
@@ -275,9 +296,23 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: () {
-                // TODO: Call acceptRequest service here
-                Navigator.of(context).pop();
+              onPressed: () async {
+                await _requestService.acceptRequestAndStartCall(request.req_id);
+
+                if (context.mounted) {
+                  final currentUser =
+                      Supabase.instance.client.auth.currentUser!;
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => VideoCallPage(
+                        callId: request.req_id, // 🔑 Common ID
+                        userId: currentUser.id,
+                        userName: "Volunteer", // Or fetch real name
+                      ),
+                    ),
+                  );
+                }
               },
               child: const Text(
                 'Accept',

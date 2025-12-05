@@ -7,7 +7,7 @@ import 'package:tappolev1/theme/app_styles.dart'; // Import your service file
 class SeniorRequest1Page extends StatefulWidget {
   const SeniorRequest1Page({super.key});
   @override
-  _SeniorRequest1PageState createState() => _SeniorRequest1PageState();
+  State<SeniorRequest1Page> createState() => _SeniorRequest1PageState();
 }
 
 class _SeniorRequest1PageState extends State<SeniorRequest1Page> {

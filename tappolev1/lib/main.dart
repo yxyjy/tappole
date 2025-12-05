@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   await Supabase.initialize(
     url: 'https://poyqpdeqayeuxpxzccas.supabase.co',
     anonKey:
