@@ -119,10 +119,10 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
         backgroundColor = const Color.fromARGB(255, 39, 181, 51);
         break;
       case 'cancelled':
-        backgroundColor = const Color.fromARGB(255, 200, 73, 73);
+        backgroundColor = Colors.grey;
         break;
       case 'accepted':
-        backgroundColor = const Color(0xFFF06638);
+        backgroundColor = const Color.fromARGB(255, 146, 255, 69);
         break;
       default:
         backgroundColor = Colors.grey;

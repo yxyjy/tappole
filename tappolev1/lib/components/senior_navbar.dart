@@ -6,7 +6,9 @@ import '../services/call_listener_service.dart';
 import '../services/auth_service.dart';
 
 class SeniorNavBar extends StatefulWidget {
-  const SeniorNavBar({super.key});
+  final int initialIndex;
+
+  const SeniorNavBar({super.key, this.initialIndex = 1});
 
   @override
   State<SeniorNavBar> createState() => _SeniorNavBarState();
@@ -14,6 +16,8 @@ class SeniorNavBar extends StatefulWidget {
 
 class _SeniorNavBarState extends State<SeniorNavBar> {
   final AuthService authService = AuthService();
+
+  late int _selectedIndex;
 
   @override
   void initState() {
@@ -26,21 +30,9 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
     if (userId != null) {
       callListener.startListening(userId);
     }
+
+    _selectedIndex = widget.initialIndex;
   }
-
-  @override
-  void dispose() {
-    callListener.stopListening();
-    super.dispose();
-  }
-
-  int _selectedIndex = 1;
-
-  static final List<Widget> _widgetOptions = <Widget>[
-    const SeniorActivityPage(),
-    const SeniorHomePage(),
-    const ProfilePage(),
-  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -49,9 +41,21 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
   }
 
   @override
+  void dispose() {
+    callListener.stopListening();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final List<Widget> widgetOptions = <Widget>[
+      const SeniorActivityPage(),
+      const SeniorHomePage(),
+      const ProfilePage(),
+    ];
+
     return Scaffold(
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: Center(child: widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           _buildNavItem(Icons.menu, 'Activity', 0),

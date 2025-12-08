@@ -4,7 +4,7 @@ import '../models/request.dart';
 class RequestService {
   final _supabase = Supabase.instance.client;
 
-  //1. Gets all requests made by currently logged in user
+  //gets all requests made by currently logged in user (senior)
   Future<List<Request>> getRequestsBySenior() async {
     final user = _supabase.auth.currentUser;
     if (user == null) {
@@ -28,7 +28,7 @@ class RequestService {
     }
   }
 
-  //2. Create a new request
+  //creates a new request (senior)
   Future<void> createNewRequest({
     String? title,
     required String content,
@@ -55,18 +55,13 @@ class RequestService {
       if (response == null || response.isEmpty) {
         throw Exception('Insert failed or no data returned.');
       }
-
-      // Optionally, you can return the newly created Request object:
-      // final newRequestMap = response.first as Map<String, dynamic>;
-      // return Request.fromMap(newRequestMap);
     } catch (e) {
       print('Error creating new request: $e');
-      // Re-throw the error for the UI layer to handle (e.g., show a Snackbar)
       throw Exception('Failed to create request: ${e.toString()}');
     }
   }
 
-  // 3. Gets all pending requests for Volunteers to view and accept
+  //gets all pending requests to view and accept (volunteer)
   Future<List<Request>> getPendingRequestsForVolunteers() async {
     final user = _supabase.auth.currentUser;
     if (user == null) {
@@ -92,6 +87,7 @@ class RequestService {
     }
   }
 
+  //accepts a request and starts a call (volunteer)
   Future<void> acceptRequestAndStartCall(String requestId) async {
     final user = _supabase.auth.currentUser;
 
@@ -100,26 +96,43 @@ class RequestService {
     }
 
     try {
-      // 1. Invoke the Edge Function (This updates the DB status to 'accepted')
       final response = await _supabase.functions.invoke(
         'create-call-room',
         body: {'requestId': requestId, 'volunteerId': user.id},
       );
 
-      // 2. Parse the response
       final data = response.data;
 
-      // 3. Check for errors
       if (data == null || data['error'] != null) {
         throw Exception(data?['error'] ?? 'Unknown error accepting request');
       }
-
-      // 💡 CHANGE: We don't need to return a 'roomUrl' anymore.
-      // With Zego, the 'requestId' IS the 'callId'.
-      // If we reached here without error, the backend successfully marked it as accepted.
     } catch (e) {
       print('Error starting call: $e');
       rethrow;
+    }
+  }
+
+  //gets all requests accepted by currently logged in user (volunteer)
+  Future<List<Request>> getRequestsForVolunteer() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+
+    try {
+      final response = await _supabase
+          .from('requests')
+          .select()
+          .eq('accepted_by', user.id)
+          .order('created_at', ascending: false);
+
+      final List<dynamic> dataList = response as List<dynamic>;
+      return dataList
+          .map((map) => Request.fromMap(map as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      print('Error fetching volunteer requests: $e');
+      throw Exception('Could not fetch volunteer requests');
     }
   }
 }
