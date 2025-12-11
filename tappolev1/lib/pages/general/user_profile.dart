@@ -67,6 +67,15 @@ class _ProfilePageState extends State<ProfilePage> {
             }
 
             final profile = snapshot.data!;
+            final email = _authService.getCurrentUserEmail();
+
+            ImageProvider avatarImage;
+            if (profile.profilePictureUrl != null &&
+                profile.profilePictureUrl!.isNotEmpty) {
+              avatarImage = NetworkImage(profile.profilePictureUrl!);
+            } else {
+              avatarImage = const AssetImage('assets/images/user_avatar.png');
+            }
 
             return Stack(
               children: [
@@ -115,8 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             _buildProfileDetailTile(
                               icon: Icons.mail,
                               title: 'Email',
-                              subtitle: 'email placeholder',
-                              //TODO: use join query to get email from auth table
+                              subtitle: email ?? 'No email',
                             ),
                             _buildProfileDetailTile(
                               icon: Icons.phone,
@@ -224,8 +232,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             offset: Offset(0, 5),
                           ),
                         ],
-                        image: const DecorationImage(
-                          image: AssetImage('assets/images/user_avatar.png'),
+                        image: DecorationImage(
+                          image: avatarImage,
                           fit: BoxFit.cover,
                         ),
                       ),

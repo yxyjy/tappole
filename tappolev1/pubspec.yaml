@@ -40,18 +40,42 @@ dependencies:
   zego_uikit: ^2.28.26
   record: ^6.1.2
   path_provider: ^2.1.5
+  flutter_native_splash: ^2.4.7
+  image_picker: ^1.2.1
 
   # Zego packages (correct and compatible set)
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  flutter_launcher_icons: "^0.14.4"
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
+
+flutter_native_splash:
+  # The background color of the splash screen
+  color: "#DE7E55" # Your AppColors.primaryOrange hex code
+
+  # The image to display in the center (your logo)
+  # It's best to use a PNG with a transparent background
+  image: "assets/icon/icon.png"
+
+  # Optional: Branding for Android 12+ (which handles splash screens differently)
+  android_12:
+    image: "assets/icon/icon.png"
+    color: "#DE7E55"
+
+  # Platform specific settings
+  android: true
+  ios: true
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

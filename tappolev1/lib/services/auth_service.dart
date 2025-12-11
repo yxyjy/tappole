@@ -64,4 +64,9 @@ class AuthService {
     final user = _supabase.auth.currentUser;
     return user?.id;
   }
+
+  String? getCurrentUserEmail() {
+    final user = _supabase.auth.currentUser;
+    return user?.email;
+  }
 }

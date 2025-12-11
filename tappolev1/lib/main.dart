@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tappolev1/pages/auth/emailloginflow.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tappolev1/auth_gate.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      home: Emailloginflow(),
+      home: AuthGate(),
     );
   }
 }

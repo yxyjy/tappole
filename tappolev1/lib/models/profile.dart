@@ -6,6 +6,7 @@ class UserProfile {
   final String phone;
   final DateTime dob;
   final String gender;
+  final String? profilePictureUrl;
 
   UserProfile({
     required this.id,
@@ -15,6 +16,7 @@ class UserProfile {
     required this.phone,
     required this.dob,
     required this.gender,
+    required this.profilePictureUrl,
   });
 
   // A 'factory constructor' to easily create a Profile from Supabase's JSON
@@ -27,6 +29,7 @@ class UserProfile {
       phone: data['phone'],
       dob: DateTime.parse(data['dob']), // Parse string back to DateTime
       gender: data['gender'],
+      profilePictureUrl: data['profile_picture'],
     );
   }
 
@@ -38,6 +41,7 @@ class UserProfile {
       'phone': phone,
       'dob': dob.toIso8601String(), // Convert DateTime to string
       'gender': gender,
+      'profile_picture': profilePictureUrl,
     };
   }
 }

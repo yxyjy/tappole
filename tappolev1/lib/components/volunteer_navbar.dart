@@ -1,24 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:tappolev1/pages/volunteer_flow/volunteer_activity.dart';
 import '../pages/volunteer_flow/volunteer_home.dart';
-import '../pages/senior_flow/senior_activity.dart';
 import '../pages/general/user_profile.dart';
 
-class VolunteerNavbar extends StatefulWidget {
-  const VolunteerNavbar({super.key});
+class VolunteerNavBar extends StatefulWidget {
+  final int initialIndex;
+
+  const VolunteerNavBar({super.key, this.initialIndex = 1});
 
   @override
-  State<VolunteerNavbar> createState() => _VolunteerNavbarState();
+  State<VolunteerNavBar> createState() => _VolunteerNavBarState();
 }
 
-class _VolunteerNavbarState extends State<VolunteerNavbar> {
-  int _selectedIndex = 1;
+class _VolunteerNavBarState extends State<VolunteerNavBar> {
+  late int _selectedIndex;
 
-  // Placeholder pages
-  static final List<Widget> _widgetOptions = <Widget>[
-    const SeniorActivityPage(),
-    const VolunteerHomePage(),
-    const ProfilePage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // 2. Initialize it here!
+    // This grabs the value passed from AuthGate (0) and sets it before the screen builds.
+    _selectedIndex = widget.initialIndex;
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -28,8 +31,13 @@ class _VolunteerNavbarState extends State<VolunteerNavbar> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> widgetOptions = <Widget>[
+      const VolunteerActivityPage(),
+      const VolunteerHomePage(),
+      const ProfilePage(),
+    ];
     return Scaffold(
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: Center(child: widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           _buildNavItem(Icons.menu, 'Activity', 0),

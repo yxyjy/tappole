@@ -34,10 +34,10 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 50.0),
+        padding: const EdgeInsets.symmetric(horizontal: 30.0),
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/seniorhomebg.png'),
+            image: AssetImage('assets/images/volunteerhomebg.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -46,16 +46,18 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 120),
+            const SizedBox(height: 80),
             Text(
               'Accepted Requests',
               textAlign: TextAlign.center,
-              style: primaryh2TextStyle,
+              style: primaryh2TextStyle.copyWith(
+                color: AppColors.primaryOrange,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
               'View your previously accepted requests.',
-              style: primarypTextStyle,
+              style: primarypTextStyle.copyWith(color: AppColors.white),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),

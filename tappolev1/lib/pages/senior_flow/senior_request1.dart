@@ -86,6 +86,7 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
         // Update Title (Only if we got one from AI)
         if (newTitle != null && newTitle.isNotEmpty) {
           _requestTitle = newTitle;
+          // TODO: fix the ai generated titles (they dont completely work yet)
         }
 
         // Move cursor to end

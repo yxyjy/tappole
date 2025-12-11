@@ -1,9 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:tappolev1/components/primary_button.dart'; // Assumed
+import 'dart:io'; // Required for File
+import 'package:flutter/material.dart'; // Required for picking images
+import 'package:tappolev1/components/primary_button.dart';
 import 'package:tappolev1/services/profile_service.dart';
 import 'package:tappolev1/models/profile.dart';
 import 'package:tappolev1/theme/app_styles.dart';
 import 'package:tappolev1/theme/app_colors.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
 
 class EditProfilePage extends StatefulWidget {
   final UserProfile initialProfile;
@@ -15,14 +18,20 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  // Controllers and State from your original EditProfilePage
   final _formKey = GlobalKey<FormState>();
+
+  // Controllers
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
 
+  // State Variables
   late DateTime _selectedDob;
   late String _selectedGender;
+
+  // Image Picking State
+  XFile? _pickedImageFile; // Stores the file locally if user picks a new one
+  final ImagePicker _picker = ImagePicker();
 
   final ProfileService _profileService = ProfileService();
   bool _isLoading = false;
@@ -30,13 +39,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with the profile data
+    // Initialize with existing data
     _firstNameController.text = widget.initialProfile.firstName;
     _lastNameController.text = widget.initialProfile.lastName;
     _phoneController.text = widget.initialProfile.phone;
     _selectedDob = widget.initialProfile.dob;
-    _selectedGender = widget.initialProfile.gender
-        .toLowerCase(); // Use lowercase for dropdown
+    _selectedGender = widget.initialProfile.gender.toLowerCase();
   }
 
   @override
@@ -45,6 +53,28 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _lastNameController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80, // Compress slightly to save data
+      );
+
+      if (image != null) {
+        setState(() {
+          _pickedImageFile = image;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error picking image: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to pick image')));
+      }
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -61,24 +91,37 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
+  // --- 2. Updated Save Function ---
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) {
-      return; // Don't submit if form is invalid
+      return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
+      String? finalAvatarUrl = widget.initialProfile.profilePictureUrl;
+
+      if (_pickedImageFile != null) {
+        final uploadedUrl = await _profileService.uploadAvatar(
+          _pickedImageFile!,
+          widget.initialProfile.id,
+        );
+
+        if (uploadedUrl != null) {
+          finalAvatarUrl = uploadedUrl;
+        }
+      }
+
       final updatedProfile = UserProfile(
         id: widget.initialProfile.id,
-        role: widget.initialProfile.role, // Role is not editable here
+        role: widget.initialProfile.role,
         firstName: _firstNameController.text.trim(),
         lastName: _lastNameController.text.trim(),
         phone: _phoneController.text.trim(),
         dob: _selectedDob,
         gender: _selectedGender,
+        profilePictureUrl: finalAvatarUrl,
       );
 
       await _profileService.updateProfile(updatedProfile);
@@ -87,7 +130,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Profile updated successfully!')),
         );
-        Navigator.of(context).pop(); // Go back to the profile page
+        Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
@@ -96,14 +139,30 @@ class _EditProfilePageState extends State<EditProfilePage> {
         );
       }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Determine which image provider to use for the avatar
+    ImageProvider? backgroundImage;
+
+    if (_pickedImageFile != null) {
+      if (kIsWeb) {
+        // Web: Use NetworkImage with the temporary blob path
+        backgroundImage = NetworkImage(_pickedImageFile!.path);
+      } else {
+        // Mobile: Use FileImage
+        backgroundImage = FileImage(File(_pickedImageFile!.path));
+      }
+    } else if (widget.initialProfile.profilePictureUrl != null &&
+        widget.initialProfile.profilePictureUrl!.isNotEmpty) {
+      backgroundImage = NetworkImage(widget.initialProfile.profilePictureUrl!);
+    } else {
+      backgroundImage = const AssetImage('assets/images/user_avatar.png');
+    }
+
     final editedPrimaryInputDecoration = primaryInputDecoration.copyWith(
       contentPadding: const EdgeInsets.symmetric(
         vertical: 0.0,
@@ -113,35 +172,37 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final editedPrimaryInputTextStyle = primaryInputLabelTextStyle.copyWith(
       fontSize: 13.0,
     );
+
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/profilebg.png'), // Background
+            image: AssetImage('assets/images/profilebg.png'),
             fit: BoxFit.cover,
           ),
         ),
         child: Stack(
           children: [
+            // --- WHITE CARD CONTAINER ---
             Positioned.fill(
               top: 100,
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(20.0),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: AppColors.lowerAlphaDarkBlue,
                       blurRadius: 10,
-                      offset: const Offset(0, -5),
+                      offset: Offset(0, -5),
                     ),
                   ],
                 ),
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.only(
-                    top: 115.0,
+                    top: 115.0, // Space for the avatar overlapping top
                     left: 22.0,
                     right: 22.0,
                     bottom: 30.0,
@@ -151,7 +212,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Title
                         Text(
                           'Edit Profile',
                           textAlign: TextAlign.center,
@@ -159,6 +219,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                         const SizedBox(height: 30),
 
+                        // First Name
                         TextFormField(
                           style: editedPrimaryInputTextStyle,
                           controller: _firstNameController,
@@ -171,6 +232,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                         const SizedBox(height: 16),
 
+                        // Last Name
                         TextFormField(
                           style: editedPrimaryInputTextStyle,
                           controller: _lastNameController,
@@ -183,6 +245,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                         const SizedBox(height: 16),
 
+                        // Phone
                         TextFormField(
                           style: editedPrimaryInputTextStyle,
                           controller: _phoneController,
@@ -196,6 +259,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                         const SizedBox(height: 16),
 
+                        // DOB & Gender Row
                         Row(
                           children: [
                             Expanded(
@@ -205,8 +269,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                   decoration: editedPrimaryInputDecoration
                                       .copyWith(labelText: 'Date of Birth'),
                                   child: Text(
-                                    style: editedPrimaryInputTextStyle,
                                     '${_selectedDob.day}/${_selectedDob.month}/${_selectedDob.year}',
+                                    style: editedPrimaryInputTextStyle,
                                   ),
                                 ),
                               ),
@@ -225,44 +289,37 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                           'prefer_not_to_say',
                                         ]
                                         .map(
-                                          (
-                                            String value,
-                                          ) => DropdownMenuItem<String>(
+                                          (value) => DropdownMenuItem(
                                             value: value,
                                             child: Text(
-                                              style:
-                                                  editedPrimaryInputTextStyle,
                                               value
                                                   .replaceAll('_', ' ')
                                                   .toUpperCase(),
+                                              style:
+                                                  editedPrimaryInputTextStyle,
                                             ),
                                           ),
                                         )
                                         .toList(),
-                                onChanged: (newValue) {
-                                  if (newValue != null) {
-                                    setState(() {
-                                      _selectedGender = newValue;
-                                    });
-                                  }
-                                },
+                                onChanged: (newValue) =>
+                                    setState(() => _selectedGender = newValue!),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 40),
-                        // Save Button
-                        PrimaryButton(
-                          text: 'Save Changes',
-                          onPressed: _saveProfile,
-                        ),
+
+                        _isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : PrimaryButton(
+                                text: 'Save Changes',
+                                onPressed: _saveProfile,
+                              ),
                         const SizedBox(height: 16),
 
                         // Cancel Button
                         TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop(); // Go back
-                          },
+                          onPressed: () => Navigator.of(context).pop(),
                           child: Text(
                             'Cancel',
                             style: primaryLinkTextStyle.copyWith(
@@ -277,53 +334,78 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
             ),
 
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 10,
-              left: 10,
-              child: TextButton.icon(
-                onPressed: () {
-                  /* Handle Settings navigation */
-                },
-                icon: const Icon(Icons.settings, color: Colors.white),
-                label: const Text(
-                  'Settings',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            ),
+            // // --- SETTINGS BUTTON (Top Left) ---
+            // Positioned(
+            //   top: MediaQuery.of(context).padding.top + 10,
+            //   left: 10,
+            //   child: TextButton.icon(
+            //     onPressed: () {},
+            //     icon: const Icon(Icons.settings, color: Colors.white),
+            //     label: const Text('Settings', style: TextStyle(color: Colors.white)),
+            //   ),
+            // ),
 
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 10,
-              right: 10,
-              child: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white, size: 30),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
+            // // --- CLOSE BUTTON (Top Right) ---
+            // Positioned(
+            //   top: MediaQuery.of(context).padding.top + 10,
+            //   right: 10,
+            //   child: IconButton(
+            //     icon: const Icon(Icons.close, color: Colors.white, size: 30),
+            //     onPressed: () => Navigator.of(context).pop(),
+            //   ),
+            // ),
 
+            // --- EDITABLE AVATAR CIRCLE (Center Top) ---
             Positioned(
               top: 60,
               left: 0,
               right: 0,
               child: Center(
-                child: Container(
-                  width: 130,
-                  height: 130,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.white,
-                    border: Border.all(color: AppColors.white, width: 4),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: AppColors.lowerAlphaDarkBlue,
-                        blurRadius: 10,
-                        offset: Offset(0, 5),
+                child: GestureDetector(
+                  onTap: _pickImage,
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 130,
+                        height: 130,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.white,
+                          border: Border.all(color: AppColors.white, width: 4),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: AppColors.lowerAlphaDarkBlue,
+                              blurRadius: 10,
+                              offset: Offset(0, 5),
+                            ),
+                          ],
+                          image: DecorationImage(
+                            image: backgroundImage,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+
+                      // The "Edit" Camera Icon Overlay
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color:
+                                AppColors.primaryOrange, // Uses your app color
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
                       ),
                     ],
-                    image: const DecorationImage(
-                      image: AssetImage('assets/images/user_avatar.png'),
-                      fit: BoxFit.cover,
-                    ),
                   ),
                 ),
               ),

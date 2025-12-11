@@ -53,7 +53,7 @@ class _EmailloginflowState extends State<Emailloginflow> {
         );
       } else if (userRole == 'volunteer') {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const VolunteerNavbar()),
+          MaterialPageRoute(builder: (_) => const VolunteerNavBar()),
         );
       } else {
         // Handle unassigned role or error case - head back to senior side
