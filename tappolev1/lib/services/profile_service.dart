@@ -47,32 +47,6 @@ class ProfileService {
     }
   }
 
-  // Future<String?> uploadAvatar(File imageFile, String userId) async {
-  //   try {
-  //     final fileExt = imageFile.path.split('.').last;
-  //     final fileName =
-  //         '$userId-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
-  //     final filePath = fileName; // Simple file path
-
-  //     // Upload to 'profile_pictures' bucket
-  //     await _supabase.storage
-  //         .from('profile_pictures')
-  //         .upload(
-  //           filePath,
-  //           imageFile,
-  //           fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
-  //         );
-
-  //     // Get the Public URL
-  //     final imageUrl = _supabase.storage
-  //         .from('profile_pictures')
-  //         .getPublicUrl(filePath);
-  //     return imageUrl;
-  //   } catch (e) {
-  //     print('Error uploading avatar: $e');
-  //     return null;
-  //   }
-  // }
   Future<String?> uploadAvatar(XFile imageFile, String userId) async {
     try {
       // 1. Read bytes (Works on Web & Mobile)
@@ -112,5 +86,44 @@ class ProfileService {
         .from('profiles')
         .update({'profile_picture': avatarUrl})
         .eq('id', userId);
+  }
+
+  // Future<Map<String, dynamic>?> getPublicUserInfo(String userId) async {
+  //   try {
+  //     final data = await _supabase
+  //         .from('profiles')
+  //         .select(
+  //           'first_name, last_name, avatar_url',
+  //         ) // Fetch only what we need
+  //         .eq('id', userId)
+  //         .single();
+  //     return data;
+  //   } catch (e) {
+  //     // If the user is deleted or error occurs, return null to handle gracefully
+  //     return null;
+  //   }
+  // }
+
+  Future<Map<String, dynamic>?> getPublicUserInfo(String userId) async {
+    print("🔍 FETCHING PROFILE FOR ID: $userId"); // Is this ID valid?
+
+    try {
+      final data = await _supabase
+          .from('profiles')
+          .select('first_name, last_name, profile_picture')
+          .eq('id', userId)
+          .maybeSingle(); // Use maybeSingle() instead of single() to avoid crashing on missing rows
+
+      if (data == null) {
+        print("❌ NO PROFILE FOUND for ID: $userId (Check your database!)");
+        return null;
+      }
+
+      print("✅ FOUND DATA: $data");
+      return data;
+    } catch (e) {
+      print("❌ CRITICAL ERROR fetching profile: $e");
+      return null;
+    }
   }
 }

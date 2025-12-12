@@ -4,6 +4,7 @@ import '../pages/senior_flow/senior_activity.dart';
 import '../pages/general/user_profile.dart';
 import '../services/call_listener_service.dart';
 import '../services/auth_service.dart';
+import '../theme/app_colors.dart';
 
 class SeniorNavBar extends StatefulWidget {
   final int initialIndex;
@@ -76,37 +77,24 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
     );
   }
 
-  BottomNavigationBarItem _buildNavItem(
-    Object iconOrImagePath, // Change the type to Object or dynamic
-    String label,
-    int index,
-  ) {
-    const activeColor = Color(0xFFDE7E55);
-    // const activeGradient = LinearGradient(
-    //   colors: [
-    //     Color.fromARGB(255, 255, 203, 173),
-    //     Color(0xFFDE7E55), // Starting color (your original color)
-    //     // Ending color (a lighter shade for effect)
-    //   ],
-    //   begin: Alignment.topLeft,
-    //   end: Alignment.bottomRight,
-    // );
+  BottomNavigationBarItem _buildNavItem(dynamic icon, String label, int index) {
+    final activeColor = AppColors.lighterOrange;
     final bool isSelected = _selectedIndex == index;
 
-    // 1. Conditional Widget Building
+    final Color iconColor = isSelected ? Colors.white : Colors.grey;
+
+    // 2. Conditional Widget Building
     Widget iconWidget;
-    if (iconOrImagePath is IconData) {
-      iconWidget = Icon(iconOrImagePath, color: Colors.white);
-    } else if (iconOrImagePath is String) {
-      iconWidget = Image.asset(
-        iconOrImagePath,
-        width: 24.0,
-        height: 24.0,
-        color: Colors.white,
-      );
+
+    if (icon is IconData) {
+      // FIX: Pass the 'iconColor' here!
+      iconWidget = Icon(icon, size: 24, color: iconColor);
+    } else if (icon is Widget) {
+      // For images, we usually leave them as-is (original colors).
+      // If you want the image to ALSO turn white/grey, wrap it in ColorFiltered.
+      iconWidget = SizedBox(width: 24, height: 24, child: icon);
     } else {
-      // Fallback/Error case
-      iconWidget = const SizedBox.shrink();
+      iconWidget = const SizedBox();
     }
 
     return BottomNavigationBarItem(
@@ -117,7 +105,7 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
             padding: const EdgeInsets.all(6.0),
             decoration: isSelected
                 ? BoxDecoration(
-                    color: activeColor,
+                    color: activeColor, // Background becomes Orange
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -129,13 +117,13 @@ class _SeniorNavBarState extends State<SeniorNavBar> {
                     ],
                   )
                 : null,
-            child: iconWidget, // Use the dynamically created widget
+            child: iconWidget,
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.grey,
               fontSize: 11,
               fontFamily: 'Archivo',
             ),

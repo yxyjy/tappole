@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/request_service.dart';
+import '../../services/profile_service.dart';
 import '../../models/request.dart';
 import '../../theme/app_styles.dart';
 import '../../theme/app_colors.dart';
@@ -20,6 +21,7 @@ class VolunteerActivityPage extends StatefulWidget {
 class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
   late final RequestService _requestService;
   late Future<List<Request>> _requestsFuture;
+  final ProfileService _profileService = ProfileService();
 
   @override
   void initState() {
@@ -46,12 +48,12 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 80),
+            const SizedBox(height: 100),
             Text(
               'Accepted Requests',
               textAlign: TextAlign.center,
               style: primaryh2TextStyle.copyWith(
-                color: AppColors.primaryOrange,
+                color: AppColors.lighterOrange,
               ),
             ),
             const SizedBox(height: 20),
@@ -106,124 +108,235 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
     );
   }
 
+  void _showRequestDetails(BuildContext context, Request request) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 30.0,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Wrap content height
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FutureBuilder<Map<String, dynamic>?>(
+                    future: _profileService.getPublicUserInfo(
+                      request.requested_by,
+                    ),
+                    builder: (context, snapshot) {
+                      String name = "Loading...";
+                      ImageProvider avatarImage = const AssetImage(
+                        'assets/images/user_avatar.png',
+                      );
+
+                      if (snapshot.hasData && snapshot.data != null) {
+                        final data = snapshot.data!;
+                        name = "${data['first_name']} ${data['last_name']}";
+                        if (data['profile_picture'] != null) {
+                          avatarImage = NetworkImage(data['profile_picture']);
+                        }
+                      }
+
+                      return Row(
+                        children: [
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                image: avatarImage,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name,
+                                  style: primaryh2TextStyle.copyWith(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Posted on ${request.created_at.toString().substring(0, 16)}",
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Text(
+                    request.req_content,
+                    style: primarypTextStyle.copyWith(
+                      color: const Color(0xFF535763),
+                      height: 1.5,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildRequestCard(BuildContext context, Request request) {
     final String status = request.req_status;
-    Color backgroundColor;
-    Color statusTextColor = Colors.white;
+
+    // 1. Define Styles based on Status (keeping your color logic)
+    Color statusBgColor;
+    Color statusTextColor = Colors.black; // Default text color
 
     switch (status) {
       case 'pending':
-        backgroundColor = const Color(0xFFFFC525);
-        statusTextColor = Colors.black;
-        break;
-      case 'completed':
-        backgroundColor = const Color.fromARGB(255, 39, 181, 51);
-        break;
-      case 'cancelled':
-        backgroundColor = const Color.fromARGB(255, 200, 73, 73);
+        statusBgColor = const Color(0xFFFFC525); // Yellow
         break;
       case 'accepted':
-        backgroundColor = const Color(0xFFF06638);
+        statusBgColor = const Color(0xFFF06638); // Orange
+        statusTextColor = Colors.white;
+        break;
+      case 'completed':
+        statusBgColor = const Color(0xFF27B533); // Green
+        statusTextColor = Colors.white;
+        break;
+      case 'cancelled':
+        statusBgColor = const Color(0xFFC84949); // Red
+        statusTextColor = Colors.white;
         break;
       default:
-        backgroundColor = Colors.grey;
+        statusBgColor = Colors.grey.shade300;
     }
 
-    return Card(
-      shadowColor: const Color.fromARGB(110, 25, 33, 51),
-      elevation: 2,
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 10,
-            ),
-            title: Text(
-              request.created_at.toString().substring(0, 16),
-              style: primarypTextStyle,
-            ),
-            subtitle: Text(
-              request.req_title ?? 'No Title',
-              style: primarypTextStyle,
-            ),
-            trailing: const Icon(Icons.mode_edit_outline_rounded),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    shadowColor: const Color.fromARGB(46, 25, 33, 51),
-                    backgroundColor: Colors.white,
-                    title: Text('00:00 12/12/12', style: primarypTextStyle),
-                    content: SingleChildScrollView(
-                      child: ListBody(
-                        children: <Widget>[
-                          Text(request.req_content, style: primarypTextStyle),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    ),
-                    actions: <Widget>[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: backgroundColor,
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                        child: Text(
-                          status,
-                          style: primarypTextStyle.copyWith(
-                            color: statusTextColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+    return GestureDetector(
+      // <--- Replaces InkWell
+      onTap: () {
+        _showRequestDetails(context, request);
+      },
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        elevation: 0,
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: Colors.grey.shade200, width: 1),
+        ),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0), // Generous padding
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FutureBuilder<Map<String, dynamic>?>(
+                future: _profileService.getPublicUserInfo(request.requested_by),
+                builder: (context, snapshot) {
+                  String name = "Loading...";
+                  ImageProvider avatarImage = const AssetImage(
+                    'assets/images/user_avatar.png',
+                  );
 
-                      TextButton(
-                        child: const Text('Close'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
+                  if (snapshot.hasData && snapshot.data != null) {
+                    final data = snapshot.data!;
+                    name = "${data['first_name']} ${data['last_name']}";
+                    if (data['profile_picture'] != null) {
+                      avatarImage = NetworkImage(data['profile_picture']);
+                    }
+                  }
+
+                  return Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.grey.shade100,
+                        backgroundImage: avatarImage,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        name,
+                        style: primaryh2TextStyle.copyWith(
+                          fontSize: 16,
+                        ), // Bold Name
                       ),
                     ],
-                    actionsAlignment: MainAxisAlignment.spaceBetween,
                   );
                 },
-              );
-            },
-          ),
-
-          const SizedBox(height: 6),
-
-          Padding(
-            padding: const EdgeInsets.only(left: 10.0, bottom: 10.0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(4.0),
               ),
-              child: Text(
-                status.toUpperCase(),
+
+              const SizedBox(height: 12),
+
+              Text(
+                request.req_content,
                 style: primarypTextStyle.copyWith(
-                  color: statusTextColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Archivo',
+                  color: const Color(0xFF535763),
+                  fontWeight: FontWeight.w200,
+                  height: 1.4,
+                  fontSize: 13,
                 ),
               ),
-            ),
+
+              const SizedBox(height: 24),
+
+              // --- FOOTER: Status Badge & Timestamp ---
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Status Pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusBgColor,
+                      borderRadius: BorderRadius.circular(30), // Stadium shape
+                    ),
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        color: statusTextColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+
+                  // Timestamp
+                  Text(
+                    request.created_at.toString().substring(0, 10),
+                    style: primarypTextStyle.copyWith(
+                      color: const Color(0xFF535763),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

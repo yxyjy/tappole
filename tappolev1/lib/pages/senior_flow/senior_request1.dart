@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 import 'package:tappolev1/services/transcribe_service.dart';
 import 'dart:io';
+import 'dart:convert';
 
 class SeniorRequest1Page extends StatefulWidget {
   const SeniorRequest1Page({super.key});
@@ -16,11 +17,9 @@ class SeniorRequest1Page extends StatefulWidget {
 }
 
 class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
-  //Requesting Service Integration and Controllers
   final _requestService = RequestService();
   final TextEditingController _contentController = TextEditingController();
 
-  // Initialize with a default, but update it later
   String _requestTitle = "Help Request";
   bool _isLoading = false;
 
@@ -67,15 +66,16 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
     setState(() => _isLoading = true);
 
     try {
-      final result = await _transcribeService.transcribeAudioFile(file);
+      final Map<String, dynamic> result = await _transcribeService
+          .transcribeAudioFile(file);
+
+      print("API DATA: $result");
 
       setState(() {
-        final mapResult = result as Map<String, dynamic>;
-        print("API RESPONSE: $mapResult"); // Check your console for this log
+        final newText = result['text'] ?? "";
+        final newTitle = result['title'];
 
-        final newText = mapResult['text'] ?? "";
-        final newTitle = mapResult['title'] ?? "";
-
+        // 1. Update Content Text
         final currentText = _contentController.text;
         if (currentText.isEmpty) {
           _contentController.text = newText;
@@ -83,13 +83,12 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
           _contentController.text = '$currentText $newText';
         }
 
-        // Update Title (Only if we got one from AI)
-        if (newTitle != null && newTitle.isNotEmpty) {
+        // 2. Update Title (AssemblyAI 'headline' summary)
+        if (newTitle != null && newTitle.toString().isNotEmpty) {
           _requestTitle = newTitle;
-          // TODO: fix the ai generated titles (they dont completely work yet)
         }
 
-        // Move cursor to end
+        // 3. Move cursor
         _contentController.selection = TextSelection.fromPosition(
           TextPosition(offset: _contentController.text.length),
         );
@@ -101,6 +100,7 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
         );
       }
     } catch (e) {
+      print("Transcription Error: $e");
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -127,7 +127,7 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
 
     try {
       await _requestService.createNewRequest(
-        title: _requestTitle, // This now holds the AI generated title!
+        title: _requestTitle,
         content: _contentController.text.trim(),
       );
 
@@ -136,10 +136,9 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
           const SnackBar(content: Text('Request submitted successfully!')),
         );
 
-        // Use pushReplacement to clear the stack if going home
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const SeniorNavBar(initialIndex: 0),
+            builder: (context) => const SeniorNavBar(initialIndex: 1),
           ),
         );
       }
@@ -176,19 +175,19 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 80), // Added top padding
+              const SizedBox(height: 100), // Added top padding
               Text(
                 'Hold the button and speak',
                 style: primaryh2TextStyle,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 50),
+              const SizedBox(height: 20),
               Text(
                 'Tell us - and the volunteers what you need!',
                 style: primarypTextStyle,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               GestureDetector(
                 onLongPressStart: (_) => _startRecording(),
                 onLongPressEnd: (_) => _stopAndTranscribe(),
@@ -197,8 +196,8 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
                     shape: const CircleBorder(),
                     padding: const EdgeInsets.all(20),
                     backgroundColor: _isRecording
-                        ? AppColors.lighterOrange
-                        : AppColors.primaryOrange,
+                        ? const Color.fromARGB(255, 178, 56, 15)
+                        : AppColors.lighterOrange,
                   ),
                   onPressed: () {},
                   child: Image.asset('assets/images/miclogo.png'),
@@ -212,12 +211,17 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
                   TextField(
                     controller: _contentController,
                     minLines: 3,
-                    maxLines: 5,
-                    // Enable typing/editing
-                    enabled:
-                        !_isLoading, // Disable while processing to prevent conflicts
+                    maxLines: 3,
+                    enabled: !_isLoading,
                     decoration: primaryInputDecoration.copyWith(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15.0),
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
                       hintText: 'Or type your request here...',
+                      hintStyle: primarypTextStyle.copyWith(
+                        color: const Color.fromARGB(255, 172, 172, 172),
+                      ),
                       floatingLabelBehavior: FloatingLabelBehavior.auto,
                       suffixIcon: _isLoading
                           ? const Padding(
@@ -231,13 +235,15 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
                         TextCapitalization.sentences, // Good for dictation
                   ),
 
-                  // Optional: Helper text
                   if (_isLoading)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8.0, right: 8.0),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0, right: 8.0),
                       child: Text(
                         "Processing audio...",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: primarypTextStyle.copyWith(
+                          fontSize: 12,
+                          color: const Color.fromARGB(255, 172, 172, 172),
+                        ),
                       ),
                     ),
                 ],
@@ -247,7 +253,7 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
 
               PrimaryButton(text: 'Confirm Request', onPressed: _submitRequest),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
               TextButton(
                 onPressed: () {

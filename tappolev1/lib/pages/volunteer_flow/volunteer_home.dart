@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:intl/intl.dart'; // Add this to pubspec.yaml for date formatting if needed
 import '../../services/request_service.dart';
 import '../../models/request.dart';
 import '../../theme/app_styles.dart';
 import '../../theme/app_colors.dart';
 import '../video_call/video_call_page.dart';
+import '../../services/profile_service.dart';
 
 class VolunteerHomePage extends StatefulWidget {
   const VolunteerHomePage({super.key});
@@ -15,8 +17,9 @@ class VolunteerHomePage extends StatefulWidget {
 
 class _VolunteerHomePageState extends State<VolunteerHomePage> {
   late final RequestService _requestService;
+  final ProfileService _profileService =
+      ProfileService(); // Initialize ProfileService
   late Future<List<Request>> _pendingRequestsFuture;
-
   late RealtimeChannel _requestsChannel;
 
   @override
@@ -24,20 +27,20 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
     super.initState();
     _requestService = RequestService();
     _pendingRequestsFuture = _requestService.getPendingRequestsForVolunteers();
-
     _listenForRequestChanges();
   }
 
   Future<void> _refreshRequests() async {
-    setState(() {
-      _pendingRequestsFuture = _requestService
-          .getPendingRequestsForVolunteers();
-    });
+    if (mounted) {
+      setState(() {
+        _pendingRequestsFuture = _requestService
+            .getPendingRequestsForVolunteers();
+      });
+    }
   }
 
   void _listenForRequestChanges() {
     _requestsChannel = Supabase.instance.client.channel('public:requests');
-
     _requestsChannel
         .onPostgresChanges(
           event: PostgresChangeEvent.all,
@@ -52,90 +55,75 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
   }
 
   @override
+  void dispose() {
+    Supabase.instance.client.removeChannel(_requestsChannel);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        // Reduced side padding slightly to give the grid more room
-        padding: const EdgeInsets.symmetric(horizontal: 30.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0), // Clean padding
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/volunteerhomebg.png'),
             fit: BoxFit.cover,
           ),
         ),
-
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 120),
+            const SizedBox(height: 100),
             Text(
               'Help a senior out!',
               textAlign: TextAlign.center,
               style: primaryh2TextStyle.copyWith(
                 color: AppColors.lighterOrange,
-              ), // Using your existing style
+              ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Text(
               'In Tappole, you can help out seniors with digital tasks such as recovering accidentally deleted photos, checking emails and more.',
               style: primarypTextStyle.copyWith(
-                color: AppColors.white,
-              ), // Using your existing style
+                color: Colors.white,
+                fontSize: 14,
+              ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
             Expanded(
               child: FutureBuilder<List<Request>>(
                 future: _pendingRequestsFuture,
                 builder: (context, snapshot) {
-                  // A. Handle Loading State
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
-
                   if (snapshot.hasError) {
-                    return Center(
-                      child: Text(
-                        'Failed to load requests: ${snapshot.error}',
-                        textAlign: TextAlign.center,
-                      ),
-                    );
+                    return Center(child: Text('Error: ${snapshot.error}'));
                   }
-
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(
+                    return const Center(
                       child: Text(
                         'No pending requests found.',
-                        style: primaryh2TextStyle.copyWith(
-                          color: AppColors.white,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 18),
                       ),
                     );
                   }
 
                   final List<Request> requests = snapshot.data!;
 
-                  // 💡 CHANGE: Using GridView instead of ListView
                   return RefreshIndicator(
                     onRefresh: _refreshRequests,
-                    child: GridView.builder(
-                      padding: const EdgeInsets.only(bottom: 20, top: 10),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing:
-                                15, // Horizontal space between cards
-                            mainAxisSpacing: 15, // Vertical space between cards
-                            childAspectRatio: 0.85, // Ratio of Width / Height
-                          ),
+                    child: ListView.builder(
+                      // Switched to ListView for better card fit like the image
+                      padding: const EdgeInsets.only(bottom: 20, top: 0),
                       itemCount: requests.length,
                       itemBuilder: (context, index) {
-                        final Request request = requests[index];
-                        return _buildGridRequestCard(context, request);
+                        return _buildRequestCard(context, requests[index]);
                       },
                     ),
                   );
@@ -148,178 +136,222 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
     );
   }
 
-  Widget _buildGridRequestCard(BuildContext context, Request request) {
-    final String status = request.req_status;
-
-    Color badgeColor = const Color(0xFFFFC525); // Default yellow for pending
-
-    if (status == 'pending') {
-      badgeColor = const Color(0xFFFFC525);
-    }
-
+  // --- THE NEW CARD WIDGET ---
+  Widget _buildRequestCard(BuildContext context, Request request) {
     return GestureDetector(
-      onTap: () {
-        // Re-use your existing dialog logic here if needed
-        _showRequestDetailsDialog(context, request, badgeColor);
-      },
-      child: Card(
-        elevation: 5.0,
-        shadowColor: Colors.black26,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
+      onTap: () => _showRequestDetailsDialog(context, request),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16), // Space between cards
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24), // Matches the rounded look
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(13),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        color: Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. Header: Avatar and Name
-              Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 20.0, // Slightly smaller to fit grid
-                    backgroundColor: Color(0xFFF0F0F0),
-                    // TODO: Use actual user image if available in a join query
-                    backgroundImage: AssetImage(
-                      'assets/images/user_avatar.png',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Header: Senior Info (Fetched via ProfileService)
+            FutureBuilder<Map<String, dynamic>?>(
+              future: _profileService.getPublicUserInfo(request.requested_by),
+              builder: (context, snapshot) {
+                String name = "Senior";
+                ImageProvider avatar = const AssetImage(
+                  'assets/images/user_avatar.png',
+                );
+
+                if (snapshot.hasData && snapshot.data != null) {
+                  final data = snapshot.data!;
+                  name = "${data['first_name']} ${data['last_name']}";
+                  if (data['profile_picture'] != null) {
+                    avatar = NetworkImage(data['profile_picture']!);
+                  }
+                }
+
+                return Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.grey.shade100,
+                      backgroundImage: avatar,
                     ),
-                  ),
-                  const SizedBox(width: 12.0),
-                  Expanded(
-                    child: Text(
-                      request.senior_name ?? 'Senior User',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    const SizedBox(width: 12),
+                    Text(
+                      name,
                       style: const TextStyle(
-                        color: Color(0xFF192133),
-                        fontWeight: FontWeight.bold,
                         fontFamily: 'Archivo',
-                        fontSize: 16.0,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF192133),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                );
+              },
+            ),
+
+            const SizedBox(height: 16),
+
+            Text(
+              request.req_content,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: primarypTextStyle.copyWith(
+                fontSize: 14,
+                color: const Color(0xFF535763),
               ),
+            ),
 
-              const SizedBox(height: 16.0),
+            const SizedBox(height: 24),
 
-              // 2. Body: Request Content (The main text)
-              Expanded(
-                child: Text(
-                  request.req_content, // Actual content from database
-                  maxLines: 4, // Limit lines for grid consistency
-                  overflow: TextOverflow.ellipsis,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // "Pending" Pill
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(
+                      0xFFFFC525,
+                    ), // The Yellow Color from design
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: const Text(
+                    "Pending",
+                    style: TextStyle(
+                      fontFamily: 'Archivo',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Color(0xFF192133), // Dark text on yellow
+                    ),
+                  ),
+                ),
+
+                // Timestamp
+                Text(
+                  // Simple trim or use DateFormat('d/M/yy HH:mm').format(request.created_at)
+                  request.created_at.toString().substring(0, 16),
                   style: const TextStyle(
-                    color: Color(0xFF192133),
                     fontFamily: 'Archivo',
-                    fontWeight:
-                        FontWeight.w300, // Lighter font weight as per design
-                    fontSize: 14.0,
-                    height: 1.3,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF192133),
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 16.0),
-
-              // 3. Footer: Date
-              Text(
-                // Format: 28/7/25 00:00 (You can use intl package for exact formatting)
-                request.created_at.toString().substring(0, 16),
-                style: const TextStyle(
-                  color: Color(0xFF192133),
-                  fontFamily: 'Archivo',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14.0,
-                ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
 
-  void _showRequestDetailsDialog(
-    BuildContext context,
-    Request request,
-    Color badgeColor,
-  ) {
+  // --- DIALOG (Kept mostly same, just styled) ---
+  void _showRequestDetailsDialog(BuildContext context, Request request) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shadowColor: const Color.fromARGB(46, 25, 33, 51),
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
           ),
-          title: Text(
-            request.req_title ?? 'Request Details',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Archivo',
-            ),
-          ),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(
-                  request.created_at.toString().substring(0, 16),
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  request.req_content,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'Archivo',
-                    color: Color(0xFF192133),
-                  ),
-                ),
-                const SizedBox(height: 10),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Close'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            // Example "Accept" button for volunteers
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF06638),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+          contentPadding: const EdgeInsets.all(24),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header again (Optional: can just pass data if you want to optimize)
+              FutureBuilder<Map<String, dynamic>?>(
+                future: _profileService.getPublicUserInfo(request.requested_by),
+                builder: (context, snapshot) {
+                  String name = "Loading...";
+                  if (snapshot.hasData && snapshot.data != null) {
+                    name =
+                        "${snapshot.data!['first_name']} ${snapshot.data!['last_name']}";
+                  }
+                  return Text(
+                    name,
+                    style: primaryh2TextStyle.copyWith(fontSize: 18),
+                  );
+                },
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Posted: ${request.created_at.toString().substring(0, 16)}",
+                style: const TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                request.req_content,
+                style: const TextStyle(
+                  fontSize: 16,
+                  height: 1.5,
+                  color: Color(0xFF535763),
                 ),
               ),
-              onPressed: () async {
-                await _requestService.acceptRequestAndStartCall(request.req_id);
+              const SizedBox(height: 30),
 
-                if (context.mounted) {
-                  final currentUser =
-                      Supabase.instance.client.auth.currentUser!;
-
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => VideoCallPage(
-                        callId: request.req_id, // 🔑 Common ID
-                        userId: currentUser.id,
-                        userName: "Volunteer", // Or fetch real name
+              // Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        "Close",
+                        style: TextStyle(color: Colors.grey),
                       ),
                     ),
-                  );
-                }
-              },
-              child: const Text(
-                'Accept',
-                style: TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryOrange,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      onPressed: () async {
+                        await _requestService.acceptRequestAndStartCall(
+                          request.req_id,
+                        );
+
+                        if (context.mounted) {
+                          final currentUser =
+                              Supabase.instance.client.auth.currentUser!;
+
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => VideoCallPage(
+                                callId: request.req_id, // 🔑 Common ID
+                                userId: currentUser.id,
+                                userName: "Volunteer", // Or fetch real name
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text(
+                        "Accept & Help",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

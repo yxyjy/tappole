@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tappolev1/pages/volunteer_flow/volunteer_activity.dart';
+import 'package:tappolev1/theme/app_colors.dart';
 import '../pages/volunteer_flow/volunteer_home.dart';
 import '../pages/general/user_profile.dart';
 
@@ -18,8 +19,6 @@ class _VolunteerNavBarState extends State<VolunteerNavBar> {
   @override
   void initState() {
     super.initState();
-    // 2. Initialize it here!
-    // This grabs the value passed from AuthGate (0) and sets it before the screen builds.
     _selectedIndex = widget.initialIndex;
   }
 
@@ -43,7 +42,9 @@ class _VolunteerNavBarState extends State<VolunteerNavBar> {
           _buildNavItem(Icons.menu, 'Activity', 0),
           _buildNavItem(
             Image.asset('assets/images/requestlogo.png'),
+
             'Request',
+
             1,
           ),
           _buildNavItem(Icons.person, 'Profile', 2),
@@ -58,40 +59,24 @@ class _VolunteerNavBarState extends State<VolunteerNavBar> {
     );
   }
 
-  BottomNavigationBarItem _buildNavItem(
-    Object iconOrImagePath, // Change the type to Object or dynamic
-    String label,
-    int index,
-  ) {
-    const activeColor = Color(0xFFDE7E55);
-    // const activeGradient = LinearGradient(
-    //   colors: [
-    //     Color.fromARGB(255, 255, 203, 173),
-    //     Color(0xFFDE7E55), // Starting color (your original color)
-    //     // Ending color (a lighter shade for effect)
-    //   ],
-    //   begin: Alignment.topLeft,
-    //   end: Alignment.bottomRight,
-    // );
+  BottomNavigationBarItem _buildNavItem(dynamic icon, String label, int index) {
+    final activeColor = AppColors.lighterOrange;
     final bool isSelected = _selectedIndex == index;
 
-    // 1. Conditional Widget Building
+    final Color iconColor = isSelected ? Colors.white : Colors.grey;
+
+    // 2. Conditional Widget Building
     Widget iconWidget;
-    if (iconOrImagePath is IconData) {
-      // If it's an IconData, build a standard Icon
-      iconWidget = Icon(iconOrImagePath, color: Colors.white);
-    } else if (iconOrImagePath is String) {
-      // If it's a String, treat it as an asset path and build an Image.asset
-      iconWidget = Image.asset(
-        iconOrImagePath,
-        width: 24.0, // Set an appropriate size for the image icon
-        height: 24.0,
-        color: Colors
-            .white, // Optional: You might need to set a color if the image is a vector/SVG that supports color overriding, or you can omit this.
-      );
+
+    if (icon is IconData) {
+      // FIX: Pass the 'iconColor' here!
+      iconWidget = Icon(icon, size: 24, color: iconColor);
+    } else if (icon is Widget) {
+      // For images, we usually leave them as-is (original colors).
+      // If you want the image to ALSO turn white/grey, wrap it in ColorFiltered.
+      iconWidget = SizedBox(width: 24, height: 24, child: icon);
     } else {
-      // Fallback/Error case
-      iconWidget = const SizedBox.shrink();
+      iconWidget = const SizedBox();
     }
 
     return BottomNavigationBarItem(
@@ -102,7 +87,7 @@ class _VolunteerNavBarState extends State<VolunteerNavBar> {
             padding: const EdgeInsets.all(6.0),
             decoration: isSelected
                 ? BoxDecoration(
-                    color: activeColor,
+                    color: activeColor, // Background becomes Orange
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -114,13 +99,13 @@ class _VolunteerNavBarState extends State<VolunteerNavBar> {
                     ],
                   )
                 : null,
-            child: iconWidget, // Use the dynamically created widget
+            child: iconWidget,
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.grey,
               fontSize: 11,
               fontFamily: 'Archivo',
             ),

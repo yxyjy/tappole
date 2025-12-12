@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tappolev1/components/primary_button.dart';
+//import 'package:tappolev1/components/primary_button.dart';
 import 'package:tappolev1/pages/auth/emailloginflow.dart';
 import 'package:tappolev1/pages/general/edit_profile.dart';
 import 'package:tappolev1/services/auth_service.dart';
@@ -27,9 +27,11 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _refreshProfile() {
-    setState(() {
-      _profileFuture = _profileService.getProfile();
-    });
+    if (mounted) {
+      setState(() {
+        _profileFuture = _profileService.getProfile();
+      });
+    }
   }
 
   void _navigateToEdit(UserProfile profile) async {
@@ -38,7 +40,9 @@ class _ProfilePageState extends State<ProfilePage> {
         builder: (context) => EditProfilePage(initialProfile: profile),
       ),
     );
-    _refreshProfile();
+    if (mounted) {
+      _refreshProfile();
+    }
   }
 
   @override
@@ -80,7 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
             return Stack(
               children: [
                 Positioned.fill(
-                  top: 70,
+                  top: 120,
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -95,9 +99,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.only(
-                        top: 87.0,
-                        left: 16.0,
-                        right: 16.0,
+                        top: 75.0,
+                        left: 12.0,
+                        right: 12.0,
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 26.0),
@@ -108,7 +112,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               textAlign: TextAlign.center,
                               style: primaryh2TextStyle.copyWith(fontSize: 30),
                             ),
-                            const SizedBox(height: 15),
+                            const SizedBox(height: 12),
 
                             // Profile Details
                             _buildProfileDetailTile(
@@ -137,7 +141,6 @@ class _ProfilePageState extends State<ProfilePage> {
                               crossAxisAlignment:
                                   CrossAxisAlignment.start, // Align tops
                               children: [
-                                // 1. Wrap the first tile in Expanded
                                 Expanded(
                                   child: _buildProfileDetailTile(
                                     icon: Icons.cake,
@@ -146,10 +149,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         '${profile.dob.day}/${profile.dob.month}/${profile.dob.year}',
                                   ),
                                 ),
-                                const SizedBox(
-                                  width: 16,
-                                ), // Add spacing between them
-                                // 2. Wrap the second tile in Expanded
+                                const SizedBox(width: 10),
                                 Expanded(
                                   child: _buildProfileDetailTile(
                                     icon: Icons.person,
@@ -160,7 +160,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               ],
                             ),
 
-                            const SizedBox(height: 40),
+                            const SizedBox(height: 20),
 
                             // Edit Profile Button
                             PrimaryOutlinedButton(
@@ -169,28 +169,24 @@ class _ProfilePageState extends State<ProfilePage> {
                                 _navigateToEdit(profile);
                               },
                             ),
-                            const SizedBox(height: 30),
+                            // const SizedBox(height: 70),
 
-                            PrimaryButton(
-                              text: "Log Out",
-                              onPressed: () async {
-                                // 1. Perform the sign-out
-                                await _authService.signOut();
+                            // PrimaryButton(
+                            //   text: "Log Out",
+                            //   onPressed: () async {
+                            //     await _authService.signOut();
 
-                                // 2. Check if the widget is still on screen (good practice for async context)
-                                if (context.mounted) {
-                                  // 3. Navigate to Login and remove all previous routes (so they can't 'back' into the app)
-                                  Navigator.of(context).pushAndRemoveUntil(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const Emailloginflow(),
-                                    ), // Replace with your Login/Auth widget
-                                    (route) =>
-                                        false, // This predicate removes all previous routes
-                                  );
-                                }
-                              },
-                            ),
+                            //     if (context.mounted) {
+                            //       Navigator.of(context).pushAndRemoveUntil(
+                            //         MaterialPageRoute(
+                            //           builder: (context) =>
+                            //               const Emailloginflow(),
+                            //         ),
+                            //         (route) => false,
+                            //       );
+                            //     }
+                            //   },
+                            // ),
                           ],
                         ),
                       ),
@@ -199,22 +195,34 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
 
                 Positioned(
-                  top: MediaQuery.of(context).padding.top + 10,
-                  left: 10,
+                  top: MediaQuery.of(context).padding.top + 15,
+                  left: 15,
                   child: TextButton.icon(
-                    onPressed: () {
-                      /* Handle Settings navigation */
+                    onPressed: () async {
+                      await _authService.signOut();
+
+                      if (context.mounted) {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (context) => const Emailloginflow(),
+                          ),
+                          (route) => false,
+                        );
+                      }
                     },
-                    icon: const Icon(Icons.settings, color: Colors.white),
+                    icon: const Icon(
+                      Icons.logout,
+                      color: AppColors.primaryOrange,
+                      size: 30,
+                    ),
                     label: const Text(
-                      'Settings',
+                      '',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
                 ),
-
                 Positioned(
-                  top: 30, // Adjust this to control the vertical position
+                  top: 70, // Adjust this to control the vertical position
                   left: 0,
                   right: 0,
                   child: Center(

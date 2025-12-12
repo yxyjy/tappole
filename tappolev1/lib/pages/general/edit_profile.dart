@@ -187,7 +187,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
           children: [
             // --- WHITE CARD CONTAINER ---
             Positioned.fill(
-              top: 100,
+              top: 120,
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.white,
@@ -202,7 +202,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 ),
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.only(
-                    top: 115.0, // Space for the avatar overlapping top
+                    top: 100.0, // Space for the avatar overlapping top
                     left: 22.0,
                     right: 22.0,
                     bottom: 30.0,
@@ -215,7 +215,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         Text(
                           'Edit Profile',
                           textAlign: TextAlign.center,
-                          style: primaryh2TextStyle.copyWith(fontSize: 22),
+                          style: primaryh2TextStyle.copyWith(fontSize: 32),
                         ),
                         const SizedBox(height: 30),
 
@@ -263,6 +263,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         Row(
                           children: [
                             Expanded(
+                              flex: 4,
                               child: GestureDetector(
                                 onTap: () => _selectDate(context),
                                 child: InputDecorator(
@@ -275,9 +276,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
                             Expanded(
+                              flex: 6,
                               child: DropdownButtonFormField<String>(
+                                isExpanded: true,
                                 value: _selectedGender,
                                 decoration: editedPrimaryInputDecoration
                                     .copyWith(labelText: 'Gender'),
@@ -292,6 +295,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                           (value) => DropdownMenuItem(
                                             value: value,
                                             child: Text(
+                                              overflow: TextOverflow.ellipsis,
                                               value
                                                   .replaceAll('_', ' ')
                                                   .toUpperCase(),
@@ -357,7 +361,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
             // --- EDITABLE AVATAR CIRCLE (Center Top) ---
             Positioned(
-              top: 60,
+              top: 70,
               left: 0,
               right: 0,
               child: Center(
@@ -366,7 +370,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   child: Stack(
                     children: [
                       Container(
-                        width: 130,
+                        width: 150,
                         height: 130,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,

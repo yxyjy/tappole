@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../services/request_service.dart';
+import '../../services/profile_service.dart'; // Import ProfileService
 import '../../models/request.dart';
+import '../../models/profile.dart'; // Import UserProfile model
 import '../../theme/app_styles.dart';
+import '../../theme/app_colors.dart'; // Assuming you have this
 
 class SeniorActivityPage extends StatefulWidget {
   const SeniorActivityPage({super.key});
@@ -16,13 +19,20 @@ class SeniorActivityPage extends StatefulWidget {
 
 class _SeniorActivityPageState extends State<SeniorActivityPage> {
   late final RequestService _requestService;
+  final ProfileService _profileService =
+      ProfileService(); // Initialize ProfileService
+
   late Future<List<Request>> _requestsFuture;
+  late Future<UserProfile> _profileFuture;
 
   @override
   void initState() {
     super.initState();
     _requestService = RequestService();
+    // 1. Fetch Requests
     _requestsFuture = _requestService.getRequestsBySenior();
+    // 2. Fetch Own Profile (to display name/pic on cards)
+    _profileFuture = _profileService.getProfile();
   }
 
   @override
@@ -31,69 +41,77 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 50.0),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24.0,
+        ), // Reduced padding for wider cards
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/seniorhomebg.png'),
             fit: BoxFit.cover,
           ),
         ),
-
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 120),
+            const SizedBox(height: 100),
             Text(
               'Your Requests',
               textAlign: TextAlign.center,
               style: primaryh2TextStyle,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             Text(
               'Edit your active requests or view your previous requests.',
               style: primarypTextStyle,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
             Expanded(
-              child: FutureBuilder<List<Request>>(
-                future: _requestsFuture,
-                builder: (context, snapshot) {
-                  // A. Handle Loading State
-                  if (snapshot.connectionState == ConnectionState.waiting) {
+              child: FutureBuilder<UserProfile>(
+                future: _profileFuture,
+                builder: (context, profileSnapshot) {
+                  if (!profileSnapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Text(
-                        'Failed to load requests: ${snapshot.error}',
-                        textAlign: TextAlign.center,
-                      ),
-                    );
-                  }
+                  final UserProfile userProfile = profileSnapshot.data!;
 
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        'You have no requests yet.',
-                        style: TextStyle(color: Color(0xFF192133)),
-                      ),
-                    );
-                  }
+                  return FutureBuilder<List<Request>>(
+                    future: _requestsFuture,
+                    builder: (context, requestSnapshot) {
+                      if (requestSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (requestSnapshot.hasError) {
+                        return Center(
+                          child: Text('Error: ${requestSnapshot.error}'),
+                        );
+                      }
+                      if (!requestSnapshot.hasData ||
+                          requestSnapshot.data!.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'You have no requests yet.',
+                            style: TextStyle(color: Color(0xFF192133)),
+                          ),
+                        );
+                      }
 
-                  final List<Request> requests = snapshot.data!;
+                      final List<Request> requests = requestSnapshot.data!;
 
-                  return ListView.builder(
-                    itemCount: requests.length,
-                    itemBuilder: (context, index) {
-                      final Request request = requests[index];
-                      return _buildRequestCard(
-                        context,
-                        request,
-                      ); // Use a dedicated builder function
+                      return ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        itemCount: requests.length,
+                        itemBuilder: (context, index) {
+                          return _buildRequestCard(
+                            context,
+                            requests[index],
+                            userProfile, // Pass profile to the card
+                          );
+                        },
+                      );
                     },
                   );
                 },
@@ -105,324 +123,292 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
     );
   }
 
-  Widget _buildRequestCard(BuildContext context, Request request) {
+  Widget _buildRequestCard(
+    BuildContext context,
+    Request request,
+    UserProfile profile,
+  ) {
     final String status = request.req_status;
-    Color backgroundColor;
-    Color statusTextColor = Colors.white;
+    Color statusBgColor;
+    Color statusTextColor = AppColors.primaryDarkBlue;
 
+    // Status Colors (Matching Volunteer View)
     switch (status) {
       case 'pending':
-        backgroundColor = const Color(0xFFFFC525);
-        statusTextColor = Colors.black;
-        break;
-      case 'completed':
-        backgroundColor = const Color.fromARGB(255, 39, 181, 51);
-        break;
-      case 'cancelled':
-        backgroundColor = Colors.grey;
+        statusBgColor = const Color(0xFFFFC525);
         break;
       case 'accepted':
-        backgroundColor = const Color.fromARGB(255, 146, 255, 69);
+        statusBgColor = const Color(0xFF27B533);
+        statusTextColor = Colors.white;
+        break;
+      case 'completed':
+        statusBgColor = const Color.fromARGB(255, 39, 70, 181);
+        statusTextColor = Colors.white;
+        break;
+      case 'cancelled':
+        statusBgColor = const Color(0xFFC84949);
+        statusTextColor = Colors.white;
         break;
       default:
-        backgroundColor = Colors.grey;
+        statusBgColor = Colors.grey.shade300;
+    }
+
+    // Determine Avatar Image
+    ImageProvider avatarImage;
+    if (profile.profilePictureUrl != null &&
+        profile.profilePictureUrl!.isNotEmpty) {
+      avatarImage = NetworkImage(profile.profilePictureUrl!);
+    } else {
+      avatarImage = const AssetImage('assets/images/user_avatar.png');
     }
 
     return Card(
-      shadowColor: const Color.fromARGB(110, 25, 33, 51),
-      elevation: 2,
+      elevation: 0.5, // Flat style
       color: Colors.white,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 10,
-            ),
-            title: Text(
-              request.created_at.toString().substring(0, 16),
-              style: primarypTextStyle,
-            ),
-            subtitle: Text(
-              request.req_title ?? 'No Title',
-              style: primarypTextStyle,
-            ),
-            trailing: const Icon(Icons.mode_edit_outline_rounded),
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    shadowColor: const Color.fromARGB(46, 25, 33, 51),
-                    backgroundColor: Colors.white,
-                    title: Text('00:00 12/12/12', style: primarypTextStyle),
-                    content: SingleChildScrollView(
-                      child: ListBody(
-                        children: <Widget>[
-                          Text(request.req_content, style: primarypTextStyle),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    ),
-                    actions: <Widget>[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: backgroundColor,
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                        child: Text(
-                          status,
-                          style: primarypTextStyle.copyWith(
-                            color: statusTextColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-
-                      TextButton(
-                        child: const Text('Close'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                    actionsAlignment: MainAxisAlignment.spaceBetween,
-                  );
-                },
-              );
-            },
-          ),
-
-          const SizedBox(height: 6),
-
-          Padding(
-            padding: const EdgeInsets.only(left: 10.0, bottom: 10.0),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                borderRadius: BorderRadius.circular(4.0),
+      margin: const EdgeInsets.only(bottom: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          _showRequestDetails(context, request, profile);
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.grey.shade100,
+                    backgroundImage: avatarImage,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    "${profile.firstName} ${profile.lastName}",
+                    style: primaryh2TextStyle.copyWith(fontSize: 16),
+                  ),
+                ],
               ),
-              child: Text(
-                status.toUpperCase(),
+
+              const SizedBox(height: 12),
+
+              if (request.req_title != null) ...[
+                Text(
+                  request.req_title!,
+                  style: primaryh2TextStyle.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+
+              Text(
+                request.req_content,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: primarypTextStyle.copyWith(
-                  color: statusTextColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Archivo',
+                  fontSize: 14,
+                  color: Colors.grey[600],
                 ),
               ),
-            ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusBgColor,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Text(
+                      status[0].toUpperCase() + status.substring(1),
+                      style: primarypTextStyle.copyWith(
+                        fontSize: 14,
+                        color: statusTextColor,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    request.created_at.toString().substring(0, 16),
+                    style: primarypTextStyle.copyWith(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  void _showRequestDetails(
+    BuildContext context,
+    Request request,
+    UserProfile profile,
+  ) {
+    final String status = request.req_status;
+
+    // 1. Determine Status Colors (Same logic as cards)
+    Color statusBgColor;
+    Color statusTextColor = Colors.black;
+
+    switch (status) {
+      case 'pending':
+        statusBgColor = const Color(0xFFFFC525);
+        break;
+      case 'accepted':
+        statusBgColor = const Color(0xFFF06638);
+        statusTextColor = Colors.white;
+        break;
+      case 'completed':
+        statusBgColor = const Color(0xFF27B533);
+        statusTextColor = Colors.white;
+        break;
+      case 'cancelled':
+        statusBgColor = const Color(0xFFC84949);
+        statusTextColor = Colors.white;
+        break;
+      default:
+        statusBgColor = Colors.grey.shade300;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Wrap content
+            children: [
+              // --- ROW 1: Timestamp (Left) & Status (Right) ---
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    request.created_at.toString().substring(0, 16),
+                    style: const TextStyle(
+                      fontFamily: 'Archivo',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Color(0xFF192133),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusBgColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      status[0].toUpperCase() + status.substring(1),
+                      style: TextStyle(
+                        fontFamily: 'Archivo',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: statusTextColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade400, width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      request.req_title ?? "Request Details",
+                      style: const TextStyle(
+                        fontFamily: 'Archivo',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color(0xFF192133),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Content
+                    Text(
+                      request.req_content,
+                      style: const TextStyle(
+                        fontFamily: 'Archivo',
+                        fontSize: 15,
+                        height: 1.5,
+                        color: Color(0xFF192133),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              if (status == 'pending')
+                SizedBox(
+                  width: double.infinity, // Full width
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF06638), // Orange
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context); // Close dialog
+                      // TODO: Navigate to your Edit Page here
+                      // Navigator.push(context, MaterialPageRoute(builder: (_) => EditRequestPage(request: request)));
+                    },
+                    child: const Text(
+                      "Edit",
+                      style: TextStyle(
+                        fontFamily: 'Archivo',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "Close",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
-
-//             Expanded(
-//               child: ListView.builder(
-//                 itemCount: 20, // Placeholder for the number of items
-//                 itemBuilder: (context, index) {
-//                   // 1. Determine the status and colors (same logic as before)
-//                   final String status = index % 3 == 0
-//                       ? 'Completed'
-//                       : index % 3 == 1
-//                       ? 'Pending'
-//                       : 'Cancelled';
-
-//                   Color backgroundColor;
-//                   switch (status) {
-//                     case 'Pending':
-//                       backgroundColor = const Color(0xFFFFC525); // Yellow
-//                       break;
-//                     case 'Completed':
-//                       backgroundColor = const Color.fromARGB(
-//                         255,
-//                         39,
-//                         181,
-//                         51,
-//                       ); // Green
-//                       break;
-//                     case 'Cancelled':
-//                       backgroundColor = const Color.fromARGB(
-//                         255,
-//                         200,
-//                         73,
-//                         73,
-//                       ); // Red
-//                       break;
-//                     default:
-//                       backgroundColor = Colors.grey;
-//                   }
-
-//                   return Card(
-//                     shadowColor: const Color.fromARGB(110, 25, 33, 51),
-//                     elevation: 2,
-//                     color: Colors.white,
-//                     margin: const EdgeInsets.symmetric(
-//                       horizontal: 8,
-//                       vertical: 8,
-//                     ),
-//                     // 2. The child of the Card is a Column
-//                     child: Column(
-//                       // Important: Align the Column's children to the start (left)
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       mainAxisSize: MainAxisSize.min, // Keep the Column tight
-//                       children: [
-//                         // 3. The original ListTile is the first child
-//                         ListTile(
-//                           contentPadding: const EdgeInsets.symmetric(
-//                             horizontal: 10,
-//                             vertical: 10,
-//                           ),
-//                           title: Text(
-//                             'Date/time',
-//                             style: TextStyle(
-//                               fontSize: 15,
-//                               height: 1.05,
-//                               fontFamily: 'Archivo',
-//                               fontWeight: FontWeight.w100,
-//                               color: const Color.fromARGB(110, 25, 33, 51),
-//                             ),
-//                           ), // Placeholder title
-//                           subtitle: const Text(
-//                             'Short description of the request...',
-//                             style: TextStyle(
-//                               fontSize: 15,
-//                               height: 1.05,
-//                               fontFamily: 'Archivo',
-//                               fontWeight: FontWeight.w100,
-//                               color: Color(0xFF192133),
-//                             ),
-//                           ), // Placeholder subtitle
-//                           trailing: const Icon(Icons.mode_edit_outline_rounded),
-//                           onTap: () {
-//                             // Your existing showDialog logic (or Navigator push)
-//                             showDialog(
-//                               context: context,
-//                               builder: (BuildContext context) {
-//                                 return AlertDialog(
-//                                   shadowColor: const Color.fromARGB(
-//                                     46,
-//                                     25,
-//                                     33,
-//                                     51,
-//                                   ),
-//                                   title: Text(
-//                                     '00:00 12/12/12',
-//                                     style: TextStyle(
-//                                       fontSize: 15,
-//                                       height: 1.05,
-//                                       fontFamily: 'Archivo',
-//                                       fontWeight: FontWeight.w100,
-//                                       color: const Color.fromARGB(
-//                                         110,
-//                                         25,
-//                                         33,
-//                                         51,
-//                                       ),
-//                                     ),
-//                                   ),
-//                                   content: SingleChildScrollView(
-//                                     child: ListBody(
-//                                       children: <Widget>[
-//                                         const Text(
-//                                           'This is the full, detailed description of the request.',
-//                                         ),
-//                                         const SizedBox(height: 10),
-//                                       ],
-//                                     ),
-//                                   ),
-//                                   actions: <Widget>[
-//                                     Container(
-//                                       padding: const EdgeInsets.symmetric(
-//                                         horizontal: 8,
-//                                         vertical: 4,
-//                                       ),
-//                                       decoration: BoxDecoration(
-//                                         color: backgroundColor,
-//                                         borderRadius: BorderRadius.circular(
-//                                           4.0,
-//                                         ), // Rounded badge corners
-//                                       ),
-//                                       child: Text(
-//                                         status,
-//                                         style: const TextStyle(
-//                                           color: Colors.white,
-//                                           fontSize: 12,
-//                                           fontWeight: FontWeight.bold,
-//                                           fontFamily: 'Archivo',
-//                                         ),
-//                                       ),
-//                                     ),
-
-//                                     TextButton(
-//                                       child: const Text('Close'),
-//                                       onPressed: () {
-//                                         Navigator.of(context).pop();
-//                                       },
-//                                     ),
-//                                   ],
-//                                   actionsAlignment:
-//                                       MainAxisAlignment.spaceBetween,
-//                                 );
-//                               },
-//                             );
-//                           },
-//                         ),
-
-//                         // 4. A separator space below the ListTile (if needed)
-//                         // Note: The Listtile's vertical padding may make this unnecessary,
-//                         // but we'll add a small space for control.
-//                         const SizedBox(height: 6),
-
-//                         // 5. The Status Badge
-//                         Padding(
-//                           // Match the horizontal padding of the ListTile
-//                           padding: const EdgeInsets.only(
-//                             left: 10.0,
-//                             bottom: 10.0,
-//                           ),
-//                           child: Container(
-//                             padding: const EdgeInsets.symmetric(
-//                               horizontal: 8,
-//                               vertical: 4,
-//                             ),
-//                             decoration: BoxDecoration(
-//                               color: backgroundColor,
-//                               borderRadius: BorderRadius.circular(
-//                                 4.0,
-//                               ), // Rounded badge corners
-//                             ),
-//                             child: Text(
-//                               status,
-//                               style: const TextStyle(
-//                                 color: Colors.white,
-//                                 fontSize: 12,
-//                                 fontWeight: FontWeight.bold,
-//                                 fontFamily: 'Archivo',
-//                               ),
-//                             ),
-//                           ),
-//                         ),
-//                       ],
-//                     ),
-//                   );
-//                 },
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
