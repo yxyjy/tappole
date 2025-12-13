@@ -383,8 +383,7 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                     ),
                     onPressed: () {
                       Navigator.pop(context); // Close dialog
-                      // TODO: Navigate to your Edit Page here
-                      // Navigator.push(context, MaterialPageRoute(builder: (_) => EditRequestPage(request: request)));
+                      _showEditDialog(context, request);
                     },
                     child: const Text(
                       "Edit",
@@ -409,6 +408,114 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showEditDialog(BuildContext context, Request request) {
+    final TextEditingController _controller = TextEditingController(
+      text: request.req_content,
+    );
+    bool _isUpdating = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent closing while editing
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          // Use StatefulBuilder to update the loading spinner inside the dialog
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(
+                "Edit Request",
+                style: primarypTextStyle.copyWith(fontSize: 20),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _controller,
+                    maxLines: 5,
+                    minLines: 3,
+                    decoration: primaryInputDecoration.copyWith(
+                      hintText: "Update your request details here...",
+                    ),
+                  ),
+                  if (_isUpdating) ...[
+                    const SizedBox(height: 20),
+                    const CircularProgressIndicator(),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: _isUpdating ? null : () => Navigator.pop(context),
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF06638),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: _isUpdating
+                      ? null
+                      : () async {
+                          if (_controller.text.trim().isEmpty) return;
+
+                          setState(() => _isUpdating = true); // Show loading
+
+                          try {
+                            // 1. Call Service
+                            await _requestService.updateRequestContent(
+                              request.req_id,
+                              _controller.text.trim(),
+                            );
+
+                            if (context.mounted) {
+                              Navigator.pop(context); // Close Edit Dialog
+
+                              // 2. Refresh the main page list
+                              // We access the parent State's setState here
+                              this.setState(() {
+                                _requestsFuture = _requestService
+                                    .getRequestsBySenior();
+                              });
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Request updated successfully!",
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              setState(() => _isUpdating = false);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Failed to update: $e")),
+                              );
+                            }
+                          }
+                        },
+                  child: const Text(
+                    "Save",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tappolev1/theme/app_styles.dart';
 import '../theme/app_colors.dart';
 
 class PrimaryButton extends StatelessWidget {
@@ -13,8 +14,8 @@ class PrimaryButton extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: AppColors.primaryOrange.withAlpha(20),
-            spreadRadius: 5,
-            blurRadius: 20,
+            spreadRadius: 10,
+            blurRadius: 30,
             offset: const Offset(0, 0),
           ),
         ],
@@ -22,21 +23,13 @@ class PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryOrange,
-          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20.0),
+          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
           ),
         ),
         onPressed: onPressed,
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 18,
-            fontFamily: 'Archivo',
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        child: Text(text, style: lightpTextStyle.copyWith(fontSize: 18)),
       ),
     );
   }

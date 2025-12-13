@@ -135,4 +135,17 @@ class RequestService {
       throw Exception('Could not fetch volunteer requests');
     }
   }
+
+  // Update request content
+  Future<void> updateRequestContent(String requestId, String newContent) async {
+    try {
+      await _supabase
+          .from('requests')
+          .update({'req_content': newContent})
+          .eq('req_id', requestId);
+    } catch (e) {
+      print('Error updating request: $e');
+      throw Exception('Could not update request');
+    }
+  }
 }

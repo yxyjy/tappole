@@ -6,6 +6,7 @@ import '../../components/senior_navbar.dart';
 import '../../components/volunteer_navbar.dart';
 import '../auth/signupflow.dart';
 import '../../theme/app_styles.dart';
+import '../../theme/app_colors.dart';
 
 enum EmailSteps { welcome, emailPasswordEntry }
 
@@ -56,25 +57,38 @@ class _EmailloginflowState extends State<Emailloginflow> {
           MaterialPageRoute(builder: (_) => const VolunteerNavBar()),
         );
       } else {
-        // Handle unassigned role or error case - head back to senior side
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error: User role not found.')),
         );
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const SeniorNavBar()),
         );
-        // Optionally navigate back to login
-        // _nextStep(EmailSteps.emailPasswordEntry);
       }
     } catch (e) {
-      //handle error
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Account not found!')));
+      String errorMessage = 'An error occurred. Please try again.';
+      final String errorString = e.toString().toLowerCase();
+
+      if (errorString.contains('user-not-found') ||
+          errorString.contains('invalid-email')) {
+        errorMessage = 'No account found with this email.';
+      } else if (errorString.contains('wrong-password') ||
+          errorString.contains('invalid-credential')) {
+        errorMessage = 'Incorrect password provided.';
+      } else if (errorString.contains('too-many-requests')) {
+        errorMessage = 'Too many attempts. Please try again later.';
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  // --- Build Method (Conditional Rendering) ---
   @override
   Widget build(BuildContext context) {
     Widget currentWidget;
@@ -97,11 +111,6 @@ class _EmailloginflowState extends State<Emailloginflow> {
   }
 }
 
-// ====================================================================
-// --- WIDGET STEP DEFINITIONS ---
-// ====================================================================
-
-// Step 1: Welcome (Reused from OTP Flow, simplified for clarity)
 class WelcomeStep extends StatelessWidget {
   final VoidCallback onNext;
   const WelcomeStep({super.key, required this.onNext});
@@ -123,10 +132,16 @@ class WelcomeStep extends StatelessWidget {
           children: <Widget>[
             const SizedBox(height: 250.0),
             Image.asset('assets/images/logo.png', height: 150.0),
-            const SizedBox(height: 80.0),
+            const SizedBox(height: 10.0),
+            // Text(
+            //   'Welcome to Tappole, where you can seek for digital help or offer a kind hand!',
+            //   style: primarypTextStyle.copyWith(color: Colors.white  ),
+            //   textAlign: TextAlign.center,
+            // ),
+            const SizedBox(height: 70.0),
             Container(
-              height: 50,
-              width: 180,
+              // height: 80,
+              width: 200,
               decoration: BoxDecoration(boxShadow: primaryButtonShadow),
               child: PrimaryButton(
                 text: 'Login',
@@ -155,9 +170,7 @@ class WelcomeStep extends StatelessWidget {
   }
 }
 
-// Step 2: Email and Password Entry
 class EmailPasswordStep extends StatefulWidget {
-  // onSubmitted accepts both email and password
   final Function(String email, String password) onSubmitted;
   final VoidCallback onPrevious;
 
@@ -185,108 +198,139 @@ class _EmailPasswordStepState extends State<EmailPasswordStep> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 50.0),
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/login2bg.png'),
-            fit: BoxFit.cover,
+      // 1. Resize prevents keyboard from covering fields,
+      // but we handle the background separately so it doesn't squish.
+      resizeToAvoidBottomInset: true,
+      body: Stack(
+        children: [
+          // --- FIXED BACKGROUND ---
+          // This stays still even when keyboard opens
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/login2bg.png'),
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-        ),
 
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Login to \nyour \naccount',
-              style: TextStyle(
-                height: 1.0,
-                color: Color(0xFF192133),
-                fontSize: 44,
-                fontFamily: 'Archivo',
-                fontWeight: FontWeight.w900,
-              ),
-              textAlign: TextAlign.left,
-            ),
-            const SizedBox(height: 30),
-            const Text(
-              'Please enter your email and password.',
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.05,
-                fontFamily: 'Archivo',
-                fontWeight: FontWeight.w300,
-                color: Color(0xFF192133),
-              ),
-              textAlign: TextAlign.left,
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _emailController,
-              decoration: primaryInputDecoration.copyWith(
-                labelText: 'Email Address',
-              ),
-              style: primaryInputLabelTextStyle,
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              decoration: primaryInputDecoration.copyWith(
-                labelText: 'Password',
-              ),
-              style: primaryInputLabelTextStyle,
-              controller: _passwordController,
-              obscureText: true,
-            ),
-            const SizedBox(height: 80),
-
-            Container(
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFF06638).withAlpha(50),
-                    spreadRadius: 5,
-                    blurRadius: 20,
-                    offset: const Offset(0, 0),
+          // --- SCROLLABLE CONTENT ---
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                // This ensures we can scroll if height is too small
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    // This forces the content to be at least as tall as the screen
+                    // so MainAxisAlignment.center works effectively.
+                    minHeight: constraints.maxHeight,
                   ),
-                ],
-              ),
-              child: PrimaryButton(
-                text: 'Login',
-                onPressed: () {
-                  widget.onSubmitted(
-                    _emailController.text.trim(),
-                    _passwordController.text,
-                  );
-                },
-              ),
-            ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 50.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 50.0),
+                        Text(
+                          'Login to \nyour \naccount',
+                          style: primaryh2TextStyle,
+                          textAlign: TextAlign.left,
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Please enter your email and password.',
+                          style: primarypTextStyle,
+                          textAlign: TextAlign.left,
+                        ),
+                        const SizedBox(height: 40),
 
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                const Text("Or ", style: TextStyle(color: Color(0x80192133))),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(Otploginflow.route());
-                  },
-                  child: const Text(
-                    'login with Phone Number',
-                    style: TextStyle(
-                      color: Color(0xFFF06638),
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
+                        // Email Field
+                        TextField(
+                          controller: _emailController,
+                          decoration: primaryInputDecoration.copyWith(
+                            labelText: 'Email Address',
+                          ),
+                          style: primaryInputLabelTextStyle,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction:
+                              TextInputAction.next, // Moves to next field
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Password Field
+                        TextField(
+                          controller: _passwordController,
+                          decoration: primaryInputDecoration.copyWith(
+                            labelText: 'Password',
+                          ),
+                          style: primaryInputLabelTextStyle,
+                          obscureText: true,
+                          textInputAction: TextInputAction.done,
+                        ),
+
+                        const SizedBox(height: 80),
+
+                        // Login Button
+                        Container(
+                          decoration: BoxDecoration(
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.lighterOrange.withAlpha(50),
+                                spreadRadius: 10,
+                                blurRadius: 50,
+                                offset: const Offset(0, 0),
+                              ),
+                            ],
+                          ),
+                          child: PrimaryButton(
+                            text: 'Login',
+                            onPressed: () {
+                              widget.onSubmitted(
+                                _emailController.text.trim(),
+                                _passwordController.text,
+                              );
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Alternative Login Link
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Text("Or ", style: primarypTextStyle),
+                            SizedBox(height: 5),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.of(
+                                  context,
+                                ).push(Otploginflow.route());
+                              },
+                              child: Text(
+                                'login with Phone Number',
+                                style: primarypTextStyle.copyWith(
+                                  color: AppColors.primaryOrange,
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 30), // Bottom padding for safety
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

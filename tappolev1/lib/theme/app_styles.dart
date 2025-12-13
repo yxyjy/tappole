@@ -9,25 +9,30 @@ final primaryInputDecoration = InputDecoration(
     fontFamily: 'Archivo',
     fontWeight: FontWeight.w200,
   ),
+  hintStyle: TextStyle(
+    color: AppColors.lowerAlphaDarkBlue,
+    fontFamily: 'Archivo',
+    fontWeight: FontWeight.w200,
+  ),
   filled: true,
   fillColor: Colors.white,
   contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
   border: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8.0),
+    borderRadius: BorderRadius.circular(20.0),
     borderSide: const BorderSide(
       color: AppColors.lowerAlphaDarkBlue,
       width: 1.0,
     ),
   ),
   enabledBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8.0),
+    borderRadius: BorderRadius.circular(20.0),
     borderSide: const BorderSide(
-      color: AppColors.lowerAlphaDarkBlue,
+      color: Color.fromARGB(0, 25, 33, 51),
       width: 1.0,
     ),
   ),
   focusedBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8.0),
+    borderRadius: BorderRadius.circular(20.0),
     borderSide: const BorderSide(color: AppColors.primaryOrange, width: 2.0),
   ),
 );

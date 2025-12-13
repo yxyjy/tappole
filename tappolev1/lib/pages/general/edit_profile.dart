@@ -225,6 +225,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           controller: _firstNameController,
                           decoration: editedPrimaryInputDecoration.copyWith(
                             labelText: 'First Name',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                              borderSide: const BorderSide(
+                                color: AppColors.lowerAlphaDarkBlue,
+                                width: 1.0,
+                              ),
+                            ),
                           ),
                           validator: (value) => value!.trim().isEmpty
                               ? 'Enter your first name.'
@@ -238,6 +245,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           controller: _lastNameController,
                           decoration: editedPrimaryInputDecoration.copyWith(
                             labelText: 'Last Name',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                              borderSide: const BorderSide(
+                                color: AppColors.lowerAlphaDarkBlue,
+                                width: 1.0,
+                              ),
+                            ),
                           ),
                           validator: (value) => value!.trim().isEmpty
                               ? 'Enter your last name.'
@@ -251,6 +265,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
                           controller: _phoneController,
                           decoration: editedPrimaryInputDecoration.copyWith(
                             labelText: 'Phone Number',
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20.0),
+                              borderSide: const BorderSide(
+                                color: AppColors.lowerAlphaDarkBlue,
+                                width: 1.0,
+                              ),
+                            ),
                           ),
                           keyboardType: TextInputType.phone,
                           validator: (value) => value!.trim().length < 8
@@ -268,7 +289,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 onTap: () => _selectDate(context),
                                 child: InputDecorator(
                                   decoration: editedPrimaryInputDecoration
-                                      .copyWith(labelText: 'Date of Birth'),
+                                      .copyWith(
+                                        labelText: 'Date of Birth',
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            20.0,
+                                          ),
+                                          borderSide: const BorderSide(
+                                            color: AppColors.lowerAlphaDarkBlue,
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                      ),
                                   child: Text(
                                     '${_selectedDob.day}/${_selectedDob.month}/${_selectedDob.year}',
                                     style: editedPrimaryInputTextStyle,
@@ -283,7 +315,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 isExpanded: true,
                                 value: _selectedGender,
                                 decoration: editedPrimaryInputDecoration
-                                    .copyWith(labelText: 'Gender'),
+                                    .copyWith(
+                                      labelText: 'Gender',
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          20.0,
+                                        ),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.lowerAlphaDarkBlue,
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                    ),
                                 items:
                                     [
                                           'male',
@@ -338,7 +381,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
             ),
 
-            // // --- SETTINGS BUTTON (Top Left) ---
+            // //settings button
             // Positioned(
             //   top: MediaQuery.of(context).padding.top + 10,
             //   left: 10,
@@ -349,7 +392,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             //   ),
             // ),
 
-            // // --- CLOSE BUTTON (Top Right) ---
+            // // close button
             // Positioned(
             //   top: MediaQuery.of(context).padding.top + 10,
             //   right: 10,
@@ -358,8 +401,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
             //     onPressed: () => Navigator.of(context).pop(),
             //   ),
             // ),
-
-            // --- EDITABLE AVATAR CIRCLE (Center Top) ---
             Positioned(
               top: 70,
               left: 0,

@@ -4,6 +4,8 @@ import '../../services/profile_service.dart';
 import '../../models/request.dart';
 import '../../theme/app_styles.dart';
 import '../../theme/app_colors.dart';
+import '../../services/feedback_service.dart';
+import '../../services/auth_service.dart';
 
 class VolunteerActivityPage extends StatefulWidget {
   const VolunteerActivityPage({super.key});
@@ -22,6 +24,8 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
   late final RequestService _requestService;
   late Future<List<Request>> _requestsFuture;
   final ProfileService _profileService = ProfileService();
+  final FeedbackService _feedbackService = FeedbackService();
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -82,10 +86,10 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
                   }
 
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
                         'You have not accepted any requests yet.',
-                        style: TextStyle(color: AppColors.primaryDarkBlue),
+                        style: lightpTextStyle,
                       ),
                     );
                   }
@@ -232,7 +236,6 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
     }
 
     return GestureDetector(
-      // <--- Replaces InkWell
       onTap: () {
         _showRequestDetails(context, request);
       },
@@ -269,17 +272,35 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
 
                   return Row(
                     children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Colors.grey.shade100,
-                        backgroundImage: avatarImage,
-                      ),
-                      const SizedBox(width: 12),
+                      CircleAvatar(radius: 18, backgroundImage: avatarImage),
+                      const SizedBox(width: 10),
                       Text(
                         name,
-                        style: primaryh2TextStyle.copyWith(
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
                           fontSize: 16,
-                        ), // Bold Name
+                        ),
+                      ),
+                      const Spacer(),
+                      // Status Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusBgColor,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: statusTextColor),
+                        ),
+                        child: Text(
+                          status[0].toUpperCase() + status.substring(1),
+                          style: TextStyle(
+                            color: statusTextColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
                     ],
                   );
@@ -300,29 +321,67 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
 
               const SizedBox(height: 24),
 
-              // --- FOOTER: Status Badge & Timestamp ---
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Status Pill
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: statusBgColor,
-                      borderRadius: BorderRadius.circular(30), // Stadium shape
-                    ),
-                    child: Text(
-                      status,
-                      style: TextStyle(
-                        color: statusTextColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                  if (status == 'accepted')
+                    FutureBuilder<Map<String, dynamic>?>(
+                      future: _feedbackService.getFeedbackForRequest(
+                        request.req_id,
                       ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const SizedBox(
+                            height: 20,
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        if (!snapshot.hasData || snapshot.data == null) {
+                          return Container(
+                            padding: const EdgeInsets.all(12),
+                            //width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              "Waiting for feedback...",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        }
+
+                        final feedback = snapshot.data!;
+                        final rating = feedback['feedback_rating'] as int;
+
+                        return Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFDFDFD),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "Feedback Received:",
+                                style: primarypTextStyle.copyWith(fontSize: 11),
+                              ),
+                              const SizedBox(width: 12),
+                              // Display the Correct Face
+                              _buildStaticFace(rating),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                  ),
 
                   // Timestamp
                   Text(
@@ -339,5 +398,30 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildStaticFace(int rating) {
+    IconData icon;
+    Color color;
+
+    switch (rating) {
+      case 1:
+        icon = Icons.sentiment_dissatisfied_rounded;
+        color = const Color(0xFFFF5252);
+        break;
+      case 2:
+        icon = Icons.sentiment_neutral_rounded;
+        color = const Color(0xFFFFC107);
+        break;
+      case 3:
+        icon = Icons.sentiment_very_satisfied_rounded;
+        color = const Color(0xFF4CAF50);
+        break;
+      default:
+        icon = Icons.help_outline;
+        color = Colors.grey;
+    }
+
+    return Icon(icon, color: color, size: 20);
   }
 }
