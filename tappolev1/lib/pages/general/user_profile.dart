@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-//import 'package:tappolev1/components/primary_button.dart';
 import 'package:tappolev1/pages/auth/emailloginflow.dart';
 import 'package:tappolev1/pages/general/edit_profile.dart';
 import 'package:tappolev1/services/auth_service.dart';
 import 'package:tappolev1/services/profile_service.dart';
+import 'package:tappolev1/services/request_service.dart'; // Import RequestService
 import 'package:tappolev1/models/profile.dart';
 import 'package:tappolev1/theme/app_styles.dart';
 import '../../components/outlined_button.dart';
@@ -18,7 +18,12 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final ProfileService _profileService = ProfileService();
   final AuthService _authService = AuthService();
+  final RequestService _requestService = RequestService(); // Add RequestService
+
   late Future<UserProfile> _profileFuture;
+
+  // We'll store stats here
+  Future<Map<String, dynamic>>? _statsFuture;
 
   @override
   void initState() {
@@ -30,6 +35,8 @@ class _ProfilePageState extends State<ProfilePage> {
     if (mounted) {
       setState(() {
         _profileFuture = _profileService.getProfile();
+        // Reset stats future so it refreshes too if needed
+        _statsFuture = null;
       });
     }
   }
@@ -44,6 +51,240 @@ class _ProfilePageState extends State<ProfilePage> {
       _refreshProfile();
     }
   }
+
+  // Helper to fetch stats based on role
+  Future<Map<String, dynamic>> _fetchStats(String role, String userId) {
+    if (_statsFuture != null) return _statsFuture!;
+
+    if (role == 'volunteer') {
+      _statsFuture = _requestService.getVolunteerStats(userId);
+    } else {
+      _statsFuture = _requestService.getSeniorStats(userId);
+    }
+    return _statsFuture!;
+  }
+
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     body: Container(
+  //       width: double.infinity,
+  //       height: double.infinity,
+  //       decoration: const BoxDecoration(
+  //         image: DecorationImage(
+  //           image: AssetImage('assets/images/profilebg.png'),
+  //           fit: BoxFit.cover,
+  //         ),
+  //       ),
+  //       child: FutureBuilder<UserProfile>(
+  //         future: _profileFuture,
+  //         builder: (context, snapshot) {
+  //           if (snapshot.connectionState == ConnectionState.waiting) {
+  //             return const Center(child: CircularProgressIndicator());
+  //           }
+  //           if (snapshot.hasError) {
+  //             return Center(child: Text('Error: ${snapshot.error}'));
+  //           }
+  //           if (!snapshot.hasData) {
+  //             return const Center(child: Text('Profile not found.'));
+  //           }
+
+  //           final profile = snapshot.data!;
+  //           final email = _authService.getCurrentUserEmail();
+
+  //           // Determine Avatar
+  //           ImageProvider avatarImage;
+  //           if (profile.profilePictureUrl != null &&
+  //               profile.profilePictureUrl!.isNotEmpty) {
+  //             avatarImage = NetworkImage(profile.profilePictureUrl!);
+  //           } else {
+  //             avatarImage = const AssetImage('assets/images/user_avatar.png');
+  //           }
+
+  //           return Stack(
+  //             children: [
+  //               // --- WHITE CARD CONTAINER ---
+  //               Positioned.fill(
+  //                 top: 140, // Push down to reveal background top
+  //                 child: Container(
+  //                   decoration: const BoxDecoration(
+  //                     color: Colors.white,
+  //                     borderRadius: BorderRadius.only(
+  //                       topLeft: Radius.circular(30),
+  //                       topRight: Radius.circular(30),
+  //                     ),
+  //                   ),
+  //                   child: SingleChildScrollView(
+  //                     padding: const EdgeInsets.only(
+  //                       top: 65.0,
+  //                       left: 30,
+  //                       right: 30,
+  //                       bottom: 40,
+  //                     ),
+  //                     child: Column(
+  //                       crossAxisAlignment: CrossAxisAlignment.start,
+  //                       children: [
+  //                         // 1. Name
+  //                         Center(
+  //                           child: Text(
+  //                             'Hey,\n${profile.firstName}!',
+  //                             textAlign: TextAlign.center,
+  //                             style: primaryh2TextStyle.copyWith(
+  //                               fontSize: 30,
+  //                               height: 1.1,
+  //                             ),
+  //                           ),
+  //                         ),
+
+  //                         const SizedBox(height: 20),
+
+  //                         FutureBuilder<Map<String, dynamic>>(
+  //                           future: _fetchStats(profile.role, profile.id),
+  //                           builder: (context, statsSnapshot) {
+  //                             String leftLabel = "Requests";
+  //                             String leftValue = "-";
+  //                             String rightLabel = "Rating";
+  //                             String rightValue = "-";
+
+  //                             if (statsSnapshot.hasData) {
+  //                               final stats = statsSnapshot.data!;
+  //                               if (profile.role == 'volunteer') {
+  //                                 // Volunteer Stats
+  //                                 leftLabel = "Requests\nCompleted";
+  //                                 leftValue = stats['completed'].toString();
+  //                                 rightLabel = "Average\nRating";
+  //                                 rightValue = (stats['rating'] as double)
+  //                                     .toStringAsFixed(1);
+  //                                 if (rightValue == "0.0") rightValue = "-";
+  //                               } else {
+  //                                 // Senior Stats
+  //                                 leftLabel = "Requests\nMade";
+  //                                 leftValue = stats['total'].toString();
+  //                                 rightLabel = "Requests\nAccepted";
+  //                                 rightValue = stats['accepted'].toString();
+  //                               }
+  //                             }
+
+  //                             return Row(
+  //                               children: [
+  //                                 Expanded(
+  //                                   child: _buildStatBox(leftLabel, leftValue),
+  //                                 ),
+  //                                 const SizedBox(width: 16),
+  //                                 Expanded(
+  //                                   child: _buildStatBox(
+  //                                     rightLabel,
+  //                                     rightValue,
+  //                                   ),
+  //                                 ),
+  //                               ],
+  //                             );
+  //                           },
+  //                         ),
+
+  //                         const SizedBox(height: 20),
+
+  //                         // 3. Details List (Clean Layout)
+  //                         _buildSimpleDetail('First Name', profile.firstName),
+  //                         _buildSimpleDetail('Last Name', profile.lastName),
+  //                         _buildSimpleDetail('Email', email ?? '-'),
+  //                         _buildSimpleDetail('Phone Number', profile.phone),
+
+  //                         Row(
+  //                           children: [
+  //                             Expanded(
+  //                               child: _buildSimpleDetail(
+  //                                 'Birthday',
+  //                                 '${profile.dob.day}/${profile.dob.month}/${profile.dob.year}',
+  //                               ),
+  //                             ),
+  //                             Expanded(
+  //                               child: _buildSimpleDetail(
+  //                                 'Gender',
+  //                                 profile.gender ??
+  //                                     '-', // Assuming gender field exists
+  //                               ),
+  //                             ),
+  //                           ],
+  //                         ),
+
+  //                         const SizedBox(height: 30),
+
+  //                         // 4. Edit Profile Button
+  //                         Center(
+  //                           child: PrimaryOutlinedButton(
+  //                             text: 'Edit Profile',
+  //                             onPressed: () => _navigateToEdit(profile),
+  //                           ),
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+
+  //               Positioned(
+  //                 top: 90, // Half in / Half out
+  //                 left: 0,
+  //                 right: 0,
+  //                 child: Center(
+  //                   child: Container(
+  //                     decoration: const BoxDecoration(
+  //                       shape: BoxShape.circle,
+  //                       boxShadow: [
+  //                         BoxShadow(
+  //                           color: Colors.black12,
+  //                           blurRadius: 15,
+  //                           offset: Offset(0, 8),
+  //                         ),
+  //                       ],
+  //                     ),
+  //                     child: CircleAvatar(
+  //                       radius: 50,
+  //                       backgroundColor: Colors.white,
+  //                       backgroundImage: avatarImage,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+
+  //               // --- LOGOUT / SETTINGS BUTTON ---
+  //               Positioned(
+  //                 top: 50,
+  //                 left: 20,
+  //                 child: GestureDetector(
+  //                   onTap: () async {
+  //                     await _authService.signOut();
+  //                     if (context.mounted) {
+  //                       Navigator.of(context).pushAndRemoveUntil(
+  //                         MaterialPageRoute(
+  //                           builder: (context) => const Emailloginflow(),
+  //                         ),
+  //                         (route) => false,
+  //                       );
+  //                     }
+  //                   },
+  //                   child: Container(
+  //                     padding: const EdgeInsets.all(8),
+  //                     decoration: BoxDecoration(
+  //                       color: Colors.white.withOpacity(0.8),
+  //                       shape: BoxShape.circle,
+  //                     ),
+  //                     child: const Icon(
+  //                       Icons.logout_rounded,
+  //                       color: AppColors.primaryOrange,
+  //                       size: 24,
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ),
+  //             ],
+  //           );
+  //         },
+  //       ),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +314,7 @@ class _ProfilePageState extends State<ProfilePage> {
             final profile = snapshot.data!;
             final email = _authService.getCurrentUserEmail();
 
+            // Determine Avatar
             ImageProvider avatarImage;
             if (profile.profilePictureUrl != null &&
                 profile.profilePictureUrl!.isNotEmpty) {
@@ -84,123 +326,174 @@ class _ProfilePageState extends State<ProfilePage> {
             return Stack(
               children: [
                 Positioned.fill(
-                  top: 120,
+                  top: 120, // Adjusted position
                   child: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(20.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.lowerAlphaDarkBlue,
-                          blurRadius: 10,
-                          offset: const Offset(0, -5),
-                        ),
-                      ],
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
                     ),
                     child: SingleChildScrollView(
+                      // Reduced top padding as avatar is now inside
                       padding: const EdgeInsets.only(
-                        top: 75.0,
-                        left: 12.0,
-                        right: 12.0,
+                        top: 20.0,
+                        left: 24,
+                        right: 24,
+                        bottom: 40,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 26.0),
-                        child: Column(
-                          children: [
-                            Text(
-                              'Hey, ${profile.firstName}!',
-                              textAlign: TextAlign.center,
-                              style: primaryh2TextStyle.copyWith(fontSize: 30),
-                            ),
-                            const SizedBox(height: 12),
-
-                            // Profile Details
-                            _buildProfileDetailTile(
-                              icon: Icons.person,
-                              title: 'First Name',
-                              subtitle: profile.firstName,
-                            ),
-                            _buildProfileDetailTile(
-                              icon: Icons.person,
-                              title: 'Last Name',
-                              subtitle: profile.lastName,
-                            ),
-                            _buildProfileDetailTile(
-                              icon: Icons.mail,
-                              title: 'Email',
-                              subtitle: email ?? 'No email',
-                            ),
-                            _buildProfileDetailTile(
-                              icon: Icons.phone,
-                              title: 'Phone Number',
-                              subtitle: profile.phone,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start, // Align tops
-                              children: [
-                                Expanded(
-                                  child: _buildProfileDetailTile(
-                                    icon: Icons.cake,
-                                    title: 'Date of Birth',
-                                    subtitle:
-                                        '${profile.dob.day}/${profile.dob.month}/${profile.dob.year}',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  // border: Border.all(
+                                  //   color: Colors.white,
+                                  //   width: 4,
+                                  // ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withAlpha(30),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: CircleAvatar(
+                                  radius: 40, // Avatar size
+                                  backgroundColor: Colors.grey.shade200,
+                                  backgroundImage: avatarImage,
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 20,
+                              ), // Spacing between avatar and name
+                              Expanded(
+                                child: Text(
+                                  'Hey,\n${profile.firstName}!',
+                                  textAlign: TextAlign.left,
+                                  style: primaryh2TextStyle.copyWith(
+                                    fontSize: 28,
+                                    height: 1.1,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: _buildProfileDetailTile(
-                                    icon: Icons.person,
-                                    title: 'Role',
-                                    subtitle: profile.role.toUpperCase(),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 20),
+                          FutureBuilder<Map<String, dynamic>>(
+                            future: _fetchStats(profile.role, profile.id),
+                            builder: (context, statsSnapshot) {
+                              String leftLabel = "Requests";
+                              String leftValue = "-";
+                              String rightLabel = "Rating";
+                              String rightValue = "-";
+
+                              if (statsSnapshot.hasData) {
+                                final stats = statsSnapshot.data!;
+                                if (profile.role == 'volunteer') {
+                                  // Volunteer Stats
+                                  leftLabel = "Requests\nCompleted";
+                                  leftValue = stats['completed'].toString();
+                                  rightLabel = "Average\nRating";
+                                  rightValue = (stats['rating'] as double)
+                                      .toStringAsFixed(1);
+                                  if (rightValue == "0.0") rightValue = "-";
+                                } else {
+                                  // Senior Stats
+                                  leftLabel = "Requests\nMade";
+                                  leftValue = stats['total'].toString();
+                                  rightLabel = "Requests\nAccepted";
+                                  rightValue = stats['accepted'].toString();
+                                }
+                              }
+
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildStatBox(leftLabel, leftValue),
                                   ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: _buildStatBox(
+                                      rightLabel,
+                                      rightValue,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          _buildSimpleDetail(
+                            Icons.person,
+                            'First Name',
+                            profile.firstName,
+                          ),
+                          _buildSimpleDetail(
+                            Icons.person,
+                            'Last Name',
+                            profile.lastName,
+                          ),
+                          _buildSimpleDetail(
+                            Icons.email,
+                            'Email',
+                            email ?? '-',
+                          ),
+                          _buildSimpleDetail(
+                            Icons.phone,
+                            'Phone Number',
+                            profile.phone,
+                          ),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildSimpleDetail(
+                                  Icons.cake,
+                                  'Birthday',
+                                  '${profile.dob.day}/${profile.dob.month}/${profile.dob.year}',
                                 ),
-                              ],
-                            ),
+                              ),
+                              Expanded(
+                                child: _buildSimpleDetail(
+                                  Icons.person,
+                                  'Gender',
+                                  profile.gender ?? '-',
+                                ),
+                              ),
+                            ],
+                          ),
 
-                            const SizedBox(height: 20),
+                          const SizedBox(height: 30),
 
-                            // Edit Profile Button
-                            PrimaryOutlinedButton(
+                          // 4. Edit Profile Button
+                          Center(
+                            child: PrimaryOutlinedButton(
                               text: 'Edit Profile',
-                              onPressed: () {
-                                _navigateToEdit(profile);
-                              },
+                              onPressed: () => _navigateToEdit(profile),
                             ),
-                            // const SizedBox(height: 70),
-
-                            // PrimaryButton(
-                            //   text: "Log Out",
-                            //   onPressed: () async {
-                            //     await _authService.signOut();
-
-                            //     if (context.mounted) {
-                            //       Navigator.of(context).pushAndRemoveUntil(
-                            //         MaterialPageRoute(
-                            //           builder: (context) =>
-                            //               const Emailloginflow(),
-                            //         ),
-                            //         (route) => false,
-                            //       );
-                            //     }
-                            //   },
-                            // ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-
+                // --- LOGOUT / SETTINGS BUTTON ---
                 Positioned(
-                  top: MediaQuery.of(context).padding.top + 15,
-                  left: 15,
-                  child: TextButton.icon(
-                    onPressed: () async {
+                  top: 60,
+                  left: 20,
+                  child: GestureDetector(
+                    onTap: () async {
                       await _authService.signOut();
-
                       if (context.mounted) {
                         Navigator.of(context).pushAndRemoveUntil(
                           MaterialPageRoute(
@@ -210,40 +503,16 @@ class _ProfilePageState extends State<ProfilePage> {
                         );
                       }
                     },
-                    icon: const Icon(
-                      Icons.logout,
-                      color: AppColors.primaryOrange,
-                      size: 30,
-                    ),
-                    label: const Text(
-                      '',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 70, // Adjust this to control the vertical position
-                  left: 0,
-                  right: 0,
-                  child: Center(
                     child: Container(
-                      width: 100,
-                      height: 100,
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
                         shape: BoxShape.circle,
-                        color: AppColors.white,
-                        border: Border.all(color: AppColors.white, width: 4),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: AppColors.lowerAlphaDarkBlue,
-                            blurRadius: 10,
-                            offset: Offset(0, 5),
-                          ),
-                        ],
-                        image: DecorationImage(
-                          image: avatarImage,
-                          fit: BoxFit.cover,
-                        ),
+                      ),
+                      child: const Icon(
+                        Icons.logout_rounded,
+                        color: AppColors.primaryOrange,
+                        size: 24,
                       ),
                     ),
                   ),
@@ -256,44 +525,74 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // --- Helper Methods ---
-  Widget _buildProfileDetailTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
+  Widget _buildStatBox(String label, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: const Color(0xFFBCE7DF),
+          width: 1,
+        ), // Light peach border
+        // boxShadow: const [
+        //   BoxShadow(
+        //     color: Color(0x0D000000), // Very subtle shadow
+        //     blurRadius: 10,
+        //     offset: Offset(0, 4),
+        //   ),
+        // ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Text(
+            label,
+            style: primarypTextStyle.copyWith(
+              color: AppColors.primaryOrange,
+              fontSize: 12,
+            ),
+          ),
+          Text(
+            value,
+            style: primaryh2TextStyle.copyWith(
+              fontSize: 24,
+              color: AppColors.primaryOrange,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSimpleDetail(IconData icon, String title, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: orangeLabelTextStyle),
-          const SizedBox(height: 3),
-          Container(
-            // 1. Add Decoration for the Border and Radius
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: AppColors.lowerAlphaDarkBlue,
-                width: 0.75,
-              ),
-              borderRadius: BorderRadius.circular(10.0),
+          Text(
+            title,
+            style: const TextStyle(
+              fontFamily: 'Archivo',
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              color: AppColors.primaryOrange, // Orange Label
             ),
+          ),
 
-            // 2. Add Padding inside the border
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12.0,
-              vertical: 8.0,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Icon(icon, color: AppColors.primaryOrange, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(subtitle, style: mediumAlphaInputTextStyle),
+          const SizedBox(height: 3),
+          Row(
+            children: [
+              Icon(icon, color: AppColors.mediumAlphaDarkBlue, size: 16),
+              SizedBox(width: 6),
+              Text(
+                value,
+                style: primarypTextStyle.copyWith(
+                  color: AppColors.mediumAlphaDarkBlue,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),

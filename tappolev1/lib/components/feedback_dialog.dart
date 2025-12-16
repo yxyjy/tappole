@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/feedback_service.dart';
-import '../theme/app_styles.dart'; // Assuming you have your text styles here
-import '../theme/app_colors.dart'; // Assuming you have your colors here
+import '../theme/app_styles.dart';
+//import '../theme/app_colors.dart';
 
 class FeedbackDialog extends StatefulWidget {
   final String requestId;
@@ -14,7 +14,7 @@ class FeedbackDialog extends StatefulWidget {
 
 class _FeedbackDialogState extends State<FeedbackDialog> {
   final FeedbackService _feedbackService = FeedbackService();
-  int? _selectedRating; // 1 = Sad, 2 = Neutral, 3 = Happy
+  int? _selectedRating;
   bool _isSubmitting = false;
 
   Future<void> _submit() async {

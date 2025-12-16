@@ -50,13 +50,14 @@ class _SeniorHomePageState extends State<SeniorHomePage> {
             const SizedBox(height: 20),
 
             Container(
-              margin: const EdgeInsets.all(10),
+              // margin: const EdgeInsets.all(10),
               decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(100.0),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFF06638).withAlpha(50),
+                    color: const Color(0xFFF06638).withAlpha(80),
                     spreadRadius: 10,
-                    blurRadius: 20,
+                    blurRadius: 50,
                     offset: const Offset(0, 0),
                   ),
                 ],
@@ -73,7 +74,6 @@ class _SeniorHomePageState extends State<SeniorHomePage> {
                   ),
                 ),
                 onPressed: () {
-                  // Debug: confirm the button press reached here
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (context) => const SeniorRequest1Page(),

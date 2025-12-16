@@ -107,7 +107,9 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
         ).showSnackBar(SnackBar(content: Text('Transcription failed: $e')));
       }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -188,19 +190,57 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 30),
-              GestureDetector(
-                onLongPressStart: (_) => _startRecording(),
-                onLongPressEnd: (_) => _stopAndTranscribe(),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    shape: const CircleBorder(),
+              Center(
+                child: GestureDetector(
+                  onLongPressStart: (_) {
+                    _startRecording();
+                    // Optional: Add Haptic Feedback for better feel
+                    // HapticFeedback.mediumImpact();
+                  },
+                  onLongPressEnd: (_) {
+                    _stopAndTranscribe();
+                  },
+                  // We use AnimatedContainer AS the button, not wrapping it
+                  child: AnimatedContainer(
+                    duration: const Duration(
+                      milliseconds: 200,
+                    ), // Snappy duration
+                    curve: Curves.easeOutBack, // Bouncy effect when growing
+                    // 1. Dynamic Size: Grows when recording
+                    width: 120,
+                    height: 120,
+
                     padding: const EdgeInsets.all(20),
-                    backgroundColor: _isRecording
-                        ? const Color.fromARGB(255, 178, 56, 15)
-                        : AppColors.lighterOrange,
+
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+
+                      color: _isRecording
+                          ? const Color.fromARGB(255, 97, 187, 190)
+                          : AppColors.lighterOrange,
+
+                      // 3. The "Glow" Effect (Shadow)
+                      boxShadow: [
+                        BoxShadow(
+                          color: _isRecording
+                              ? const Color.fromARGB(
+                                  255,
+                                  98,
+                                  242,
+                                  228,
+                                ).withAlpha(50)
+                              : Colors.transparent,
+                          blurRadius: _isRecording ? 30 : 10, // Soft glow
+                          spreadRadius: _isRecording ? 10 : 5, // Wide glow
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/images/miclogo.png',
+                      // Optional: Make icon white when active if needed
+                      color: _isRecording ? Colors.white : null,
+                    ),
                   ),
-                  onPressed: () {},
-                  child: Image.asset('assets/images/miclogo.png'),
                 ),
               ),
               const SizedBox(height: 20),

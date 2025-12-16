@@ -13,12 +13,12 @@ class PrimaryOutlinedButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: AppColors.primaryDarkBlue.withAlpha(20),
-          width: 0.5,
-        ),
-      ),
+      // decoration: BoxDecoration(
+      //   // border: Border.all(
+      //   //   color: AppColors.primaryDarkBlue.withAlpha(20),
+      //   //   width: 0.5,
+      //   // ),
+      // ),
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15.0),

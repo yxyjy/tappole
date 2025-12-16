@@ -26,12 +26,15 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
   final ProfileService _profileService = ProfileService();
   final FeedbackService _feedbackService = FeedbackService();
   final AuthService _authService = AuthService();
+  bool _isAscending = false;
 
   @override
   void initState() {
     super.initState();
     _requestService = RequestService();
-    _requestsFuture = _requestService.getRequestsForVolunteer();
+    _requestsFuture = _requestService.getRequestsForVolunteer(
+      isAscending: _isAscending,
+    );
   }
 
   @override
@@ -67,6 +70,47 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
+
+            //requests sorter
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'All Previous Requests',
+                    style: primarypTextStyle.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isAscending = !_isAscending;
+                        _requestsFuture = _requestService
+                            .getRequestsForVolunteer(isAscending: _isAscending);
+                      });
+                    },
+                    child: Row(
+                      children: [
+                        const Icon(Icons.list, color: Colors.white),
+                        const SizedBox(width: 6),
+                        Icon(
+                          _isAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 15),
 
             Expanded(
               child: FutureBuilder<List<Request>>(

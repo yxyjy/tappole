@@ -39,12 +39,10 @@ class _VolunteerNavBarState extends State<VolunteerNavBar> {
       body: Center(child: widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
-          _buildNavItem(Icons.menu, 'Activity', 0),
+          _buildNavItem(Icons.menu, 'History', 0),
           _buildNavItem(
             Image.asset('assets/images/requestlogo.png'),
-
-            'Request',
-
+            'Requests',
             1,
           ),
           _buildNavItem(Icons.person, 'Profile', 2),

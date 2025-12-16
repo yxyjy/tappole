@@ -7,7 +7,8 @@ import '../../theme/app_styles.dart';
 import '../../theme/app_colors.dart';
 import '../video_call/video_call_page.dart';
 import '../../services/profile_service.dart';
-import '../../components/feedback_dialog.dart';
+import '../../components/primary_button.dart';
+// import '../../components/feedback_dialog.dart';
 
 class VolunteerHomePage extends StatefulWidget {
   const VolunteerHomePage({super.key});
@@ -23,19 +24,25 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
   late Future<List<Request>> _pendingRequestsFuture;
   late RealtimeChannel _requestsChannel;
 
+  bool _isAscending = false;
+
   @override
   void initState() {
     super.initState();
     _requestService = RequestService();
-    _pendingRequestsFuture = _requestService.getPendingRequestsForVolunteers();
+    _pendingRequestsFuture = _requestService.getPendingRequestsForVolunteers(
+      isAscending: _isAscending,
+    );
     _listenForRequestChanges();
   }
 
   Future<void> _refreshRequests() async {
     if (mounted) {
       setState(() {
+        // _pendingRequestsFuture = _requestService
+        //     .getPendingRequestsForVolunteers();
         _pendingRequestsFuture = _requestService
-            .getPendingRequestsForVolunteers();
+            .getPendingRequestsForVolunteers(isAscending: _isAscending);
       });
     }
   }
@@ -67,7 +74,7 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 24.0), // Clean padding
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/volunteerhomebg.png'),
@@ -79,22 +86,64 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
           children: [
             const SizedBox(height: 100),
             Text(
-              'Help a senior out!',
+              'Help a\nsenior out!',
               textAlign: TextAlign.center,
               style: primaryh2TextStyle.copyWith(
                 color: AppColors.lighterOrange,
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'In Tappole, you can help out seniors with digital tasks such as recovering accidentally deleted photos, checking emails and more.',
-              style: primarypTextStyle.copyWith(
-                color: Colors.white,
-                fontSize: 14,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Text(
+                'In Tappole, you can help out seniors with digital tasks such as recovering accidentally deleted photos, checking emails and more.',
+                style: primarypTextStyle.copyWith(
+                  color: Colors.white,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'All Requests',
+                    style: primarypTextStyle.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isAscending = !_isAscending;
+                        _refreshRequests();
+                      });
+                    },
+                    child: Row(
+                      children: [
+                        const Icon(Icons.list, color: Colors.white),
+                        const SizedBox(width: 6),
+                        Icon(
+                          _isAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: 15),
 
             Expanded(
               child: FutureBuilder<List<Request>>(
@@ -120,7 +169,6 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
                   return RefreshIndicator(
                     onRefresh: _refreshRequests,
                     child: ListView.builder(
-                      // Switched to ListView for better card fit like the image
                       padding: const EdgeInsets.only(bottom: 20, top: 0),
                       itemCount: requests.length,
                       itemBuilder: (context, index) {
@@ -137,7 +185,6 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
     );
   }
 
-  // --- THE NEW CARD WIDGET ---
   Widget _buildRequestCard(BuildContext context, Request request) {
     return GestureDetector(
       onTap: () => _showRequestDetailsDialog(context, request),
@@ -158,7 +205,6 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Header: Senior Info (Fetched via ProfileService)
             FutureBuilder<Map<String, dynamic>?>(
               future: _profileService.getPublicUserInfo(request.requested_by),
               builder: (context, snapshot) {
@@ -306,21 +352,18 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text(
+                      child: Text(
                         "Close",
-                        style: TextStyle(color: Colors.grey),
+                        style: primarypTextStyle.copyWith(color: Colors.grey),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     flex: 2,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryOrange,
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
+                    child: PrimaryButton(
+                      textStyle: lightpTextStyle,
+                      text: "Accept and Help",
                       onPressed: () async {
                         await _requestService.acceptRequestAndStartCall(
                           request.req_id,
@@ -333,18 +376,14 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (_) => VideoCallPage(
-                                callId: request.req_id, // 🔑 Common ID
+                                callId: request.req_id,
                                 userId: currentUser.id,
-                                userName: "Volunteer", // Or fetch real name
+                                userName: "Volunteer",
                               ),
                             ),
                           );
                         }
                       },
-                      child: const Text(
-                        "Accept & Help",
-                        style: TextStyle(color: Colors.white),
-                      ),
                     ),
                   ),
                 ],

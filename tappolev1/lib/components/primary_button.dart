@@ -5,7 +5,21 @@ import '../theme/app_colors.dart';
 class PrimaryButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
-  const PrimaryButton({super.key, required this.text, required this.onPressed});
+
+  final Color? backgroundColor;
+  final Color? textColor;
+  final BorderSide? border;
+  final TextStyle? textStyle;
+
+  const PrimaryButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.backgroundColor,
+    this.textColor,
+    this.border,
+    this.textStyle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,14 +36,23 @@ class PrimaryButton extends StatelessWidget {
       ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryOrange,
+          backgroundColor: backgroundColor ?? AppColors.primaryOrange,
           padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15.0),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30.0),
           ),
+          side: border ?? BorderSide.none,
         ),
         onPressed: onPressed,
-        child: Text(text, style: lightpTextStyle.copyWith(fontSize: 18)),
+        child: Text(
+          text,
+          style:
+              textStyle ??
+              lightpTextStyle.copyWith(
+                fontSize: 18,
+                color: textColor ?? Colors.white,
+              ),
+        ),
       ),
     );
   }

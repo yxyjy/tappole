@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../services/request_service.dart';
-import '../../services/profile_service.dart'; // Import ProfileService
+import '../../services/profile_service.dart';
 import '../../models/request.dart';
-import '../../models/profile.dart'; // Import UserProfile model
+import '../../models/profile.dart';
 import '../../theme/app_styles.dart';
-import '../../theme/app_colors.dart'; // Assuming you have this
+import '../../theme/app_colors.dart';
+import '../../components/primary_button.dart';
 
 class SeniorActivityPage extends StatefulWidget {
   const SeniorActivityPage({super.key});
@@ -19,20 +20,38 @@ class SeniorActivityPage extends StatefulWidget {
 
 class _SeniorActivityPageState extends State<SeniorActivityPage> {
   late final RequestService _requestService;
-  final ProfileService _profileService =
-      ProfileService(); // Initialize ProfileService
-
+  final ProfileService _profileService = ProfileService();
   late Future<List<Request>> _requestsFuture;
   late Future<UserProfile> _profileFuture;
+
+  bool _isAscending = false;
+
+  String _selectedStatus = 'All';
+  final List<String> _filterOptions = [
+    'All',
+    'Pending',
+    'Accepted',
+    'Cancelled',
+  ];
 
   @override
   void initState() {
     super.initState();
     _requestService = RequestService();
-    // 1. Fetch Requests
-    _requestsFuture = _requestService.getRequestsBySenior();
-    // 2. Fetch Own Profile (to display name/pic on cards)
+    _requestsFuture = _requestService.getRequestsBySenior(
+      isAscending: _isAscending,
+    );
     _profileFuture = _profileService.getProfile();
+    _fetchRequests();
+  }
+
+  void _fetchRequests() {
+    setState(() {
+      _requestsFuture = _requestService.getRequestsBySenior(
+        isAscending: _isAscending,
+        status: _selectedStatus, // Pass the filter here
+      );
+    });
   }
 
   @override
@@ -41,9 +60,7 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 24.0,
-        ), // Reduced padding for wider cards
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/seniorhomebg.png'),
@@ -53,19 +70,102 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 100),
+            const SizedBox(height: 90),
             Text(
-              'Your Requests',
+              'Your\nRequests',
               textAlign: TextAlign.center,
               style: primaryh2TextStyle,
             ),
             const SizedBox(height: 15),
-            Text(
-              'Edit your active requests or view your previous requests.',
-              style: primarypTextStyle,
-              textAlign: TextAlign.center,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40.0),
+              child: Text(
+                'Edit your active requests or view your previous requests.',
+                style: primarypTextStyle,
+                textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: 30),
+
+            //requests sorter
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'All Previous Requests',
+                    style: primarypTextStyle.copyWith(),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isAscending = !_isAscending;
+                        _fetchRequests();
+                      });
+                    },
+                    child: Row(
+                      children: [
+                        const Icon(Icons.list, color: AppColors.primaryOrange),
+                        const SizedBox(width: 6),
+                        Icon(
+                          _isAscending
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: AppColors.primaryOrange,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _filterOptions.map((status) {
+                  final bool isSelected = _selectedStatus == status;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: FilterChip(
+                      label: Text(status),
+                      selected: isSelected,
+                      showCheckmark: false,
+                      selectedColor: AppColors.primaryOrange,
+                      backgroundColor: Colors.white,
+                      labelStyle: primarypTextStyle.copyWith(
+                        color: isSelected ? Colors.white : Colors.grey[600],
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                      ),
+
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: isSelected
+                              ? AppColors.primaryOrange
+                              : Colors.grey.shade300,
+                        ),
+                      ),
+
+                      onSelected: (bool selected) {
+                        if (selected) {
+                          _selectedStatus = status;
+                          _fetchRequests();
+                        }
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+
+            const SizedBox(height: 15),
 
             Expanded(
               child: FutureBuilder<UserProfile>(
@@ -91,10 +191,10 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                       }
                       if (!requestSnapshot.hasData ||
                           requestSnapshot.data!.isEmpty) {
-                        return const Center(
+                        return Center(
                           child: Text(
                             'You have no requests yet.',
-                            style: TextStyle(color: Color(0xFF192133)),
+                            style: primarypTextStyle,
                           ),
                         );
                       }
@@ -108,7 +208,7 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                           return _buildRequestCard(
                             context,
                             requests[index],
-                            userProfile, // Pass profile to the card
+                            userProfile,
                           );
                         },
                       );
@@ -132,7 +232,6 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
     Color statusBgColor;
     Color statusTextColor = AppColors.primaryDarkBlue;
 
-    // Status Colors (Matching Volunteer View)
     switch (status) {
       case 'pending':
         statusBgColor = const Color(0xFFFFC525);
@@ -146,14 +245,13 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
         statusTextColor = Colors.white;
         break;
       case 'cancelled':
-        statusBgColor = const Color(0xFFC84949);
-        statusTextColor = Colors.white;
+        statusBgColor = const Color.fromARGB(255, 219, 219, 219);
+        statusTextColor = const Color.fromARGB(255, 91, 91, 91);
         break;
       default:
-        statusBgColor = Colors.grey.shade300;
+        statusBgColor = const Color.fromARGB(255, 255, 255, 255);
     }
 
-    // Determine Avatar Image
     ImageProvider avatarImage;
     if (profile.profilePictureUrl != null &&
         profile.profilePictureUrl!.isNotEmpty) {
@@ -163,7 +261,7 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
     }
 
     return Card(
-      elevation: 0.5, // Flat style
+      elevation: 0.5,
       color: Colors.white,
       margin: const EdgeInsets.only(bottom: 20),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -260,7 +358,6 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
   ) {
     final String status = request.req_status;
 
-    // 1. Determine Status Colors (Same logic as cards)
     Color statusBgColor;
     Color statusTextColor = Colors.black;
 
@@ -293,20 +390,14 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min, // Wrap content
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // --- ROW 1: Timestamp (Left) & Status (Right) ---
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     request.created_at.toString().substring(0, 16),
-                    style: const TextStyle(
-                      fontFamily: 'Archivo',
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Color(0xFF192133),
-                    ),
+                    style: primarypTextStyle,
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -344,25 +435,13 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                   children: [
                     Text(
                       request.req_title ?? "Request Details",
-                      style: const TextStyle(
-                        fontFamily: 'Archivo',
+                      style: primarypTextStyle.copyWith(
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Color(0xFF192133),
                       ),
                     ),
                     const SizedBox(height: 12),
-                    // Content
-                    Text(
-                      request.req_content,
-                      style: const TextStyle(
-                        fontFamily: 'Archivo',
-                        fontSize: 15,
-                        height: 1.5,
-                        color: Color(0xFF192133),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    Text(request.req_content, style: primarypTextStyle),
                   ],
                 ),
               ),
@@ -370,31 +449,38 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
               const SizedBox(height: 30),
 
               if (status == 'pending')
-                SizedBox(
-                  width: double.infinity, // Full width
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF06638), // Orange
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: PrimaryButton(
+                        backgroundColor: Colors.white,
+                        border: BorderSide(
+                          color: const Color.fromARGB(255, 255, 48, 48),
+                          width: 1.2,
+                        ),
+                        textColor: const Color.fromARGB(255, 255, 48, 48),
+                        onPressed: () {
+                          _showConfirmCancelDialog(context, request);
+                        },
+                        text: "Cancel Request",
                       ),
                     ),
-                    onPressed: () {
-                      Navigator.pop(context); // Close dialog
-                      _showEditDialog(context, request);
-                    },
-                    child: const Text(
-                      "Edit",
-                      style: TextStyle(
-                        fontFamily: 'Archivo',
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white,
+                    SizedBox(width: 10),
+
+                    Expanded(
+                      flex: 1,
+                      child: PrimaryButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showEditDialog(context, request);
+                        },
+                        text: "Edit",
                       ),
                     ),
-                  ),
+                  ],
                 )
               else
                 TextButton(
@@ -412,17 +498,16 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
   }
 
   void _showEditDialog(BuildContext context, Request request) {
-    final TextEditingController _controller = TextEditingController(
+    final TextEditingController controller = TextEditingController(
       text: request.req_content,
     );
     bool _isUpdating = false;
 
     showDialog(
       context: context,
-      barrierDismissible: false, // Prevent closing while editing
+      barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return StatefulBuilder(
-          // Use StatefulBuilder to update the loading spinner inside the dialog
           builder: (context, setState) {
             return AlertDialog(
               backgroundColor: Colors.white,
@@ -437,11 +522,15 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
-                    controller: _controller,
+                    controller: controller,
                     maxLines: 5,
                     minLines: 3,
                     decoration: primaryInputDecoration.copyWith(
                       hintText: "Update your request details here...",
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
                     ),
                   ),
                   if (_isUpdating) ...[
@@ -468,7 +557,7 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                   onPressed: _isUpdating
                       ? null
                       : () async {
-                          if (_controller.text.trim().isEmpty) return;
+                          if (controller.text.trim().isEmpty) return;
 
                           setState(() => _isUpdating = true); // Show loading
 
@@ -476,14 +565,12 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                             // 1. Call Service
                             await _requestService.updateRequestContent(
                               request.req_id,
-                              _controller.text.trim(),
+                              controller.text.trim(),
                             );
 
                             if (context.mounted) {
                               Navigator.pop(context); // Close Edit Dialog
 
-                              // 2. Refresh the main page list
-                              // We access the parent State's setState here
                               this.setState(() {
                                 _requestsFuture = _requestService
                                     .getRequestsBySenior();
@@ -516,6 +603,72 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
           },
         );
       },
+    );
+  }
+
+  void _showConfirmCancelDialog(BuildContext context, Request request) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          "Confirm Cancel",
+          style: TextStyle(
+            fontFamily: 'Archivo',
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        content: const Text(
+          "Are you sure you want to cancel this request?",
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: [
+          // 'No' Button
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("No", style: TextStyle(color: Colors.grey)),
+          ),
+
+          // 'Yes' Button
+          TextButton(
+            onPressed: () async {
+              try {
+                await _requestService.cancelRequest(request.req_id);
+
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+
+                  setState(() {
+                    _requestsFuture = _requestService.getRequestsBySenior();
+                  });
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Request cancelled successfully"),
+                      backgroundColor: Colors.grey,
+                    ),
+                  );
+                }
+              } catch (e) {
+                print("Cancel Error: $e");
+                if (context.mounted) {
+                  Navigator.pop(context); // Close only confirm dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Failed to cancel: $e")),
+                  );
+                }
+              }
+            },
+            child: const Text(
+              "Yes, Cancel",
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
