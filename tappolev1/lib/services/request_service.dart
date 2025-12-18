@@ -107,17 +107,21 @@ class RequestService {
       final List<dynamic> ratings = feedbackResponse as List<dynamic>;
 
       double averageRating = 0.0;
+      String displayString = "0.0 / 5";
+
       if (ratings.isNotEmpty) {
-        final totalStars = ratings.fold<int>(
+        final totalRawScore = ratings.fold<int>(
           0,
           (sum, item) => sum + (item['feedback_rating'] as int),
         );
-        averageRating = totalStars / ratings.length;
+        final double rawAverage = totalRawScore / ratings.length;
+        averageRating = rawAverage / 3 * 5;
+        displayString = "${averageRating.toStringAsFixed(1)} / 5";
       }
 
       return {
         'completed': completedCount,
-        'rating': averageRating, // Returns a double (e.g., 2.5, 3.0)
+        'rating': displayString, // Returns a double (e.g., 2.5, 3.0)
         'review_count': ratings.length, // Useful to show "(12 reviews)"
       };
     } catch (e) {

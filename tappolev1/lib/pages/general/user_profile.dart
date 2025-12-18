@@ -8,6 +8,8 @@ import 'package:tappolev1/models/profile.dart';
 import 'package:tappolev1/theme/app_styles.dart';
 import '../../components/outlined_button.dart';
 import '../../theme/app_colors.dart';
+import '../../components/textsize_adjuster.dart';
+import '../../components/primary_button.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -52,7 +54,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Helper to fetch stats based on role
   Future<Map<String, dynamic>> _fetchStats(String role, String userId) {
     if (_statsFuture != null) return _statsFuture!;
 
@@ -63,228 +64,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
     return _statsFuture!;
   }
-
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     body: Container(
-  //       width: double.infinity,
-  //       height: double.infinity,
-  //       decoration: const BoxDecoration(
-  //         image: DecorationImage(
-  //           image: AssetImage('assets/images/profilebg.png'),
-  //           fit: BoxFit.cover,
-  //         ),
-  //       ),
-  //       child: FutureBuilder<UserProfile>(
-  //         future: _profileFuture,
-  //         builder: (context, snapshot) {
-  //           if (snapshot.connectionState == ConnectionState.waiting) {
-  //             return const Center(child: CircularProgressIndicator());
-  //           }
-  //           if (snapshot.hasError) {
-  //             return Center(child: Text('Error: ${snapshot.error}'));
-  //           }
-  //           if (!snapshot.hasData) {
-  //             return const Center(child: Text('Profile not found.'));
-  //           }
-
-  //           final profile = snapshot.data!;
-  //           final email = _authService.getCurrentUserEmail();
-
-  //           // Determine Avatar
-  //           ImageProvider avatarImage;
-  //           if (profile.profilePictureUrl != null &&
-  //               profile.profilePictureUrl!.isNotEmpty) {
-  //             avatarImage = NetworkImage(profile.profilePictureUrl!);
-  //           } else {
-  //             avatarImage = const AssetImage('assets/images/user_avatar.png');
-  //           }
-
-  //           return Stack(
-  //             children: [
-  //               // --- WHITE CARD CONTAINER ---
-  //               Positioned.fill(
-  //                 top: 140, // Push down to reveal background top
-  //                 child: Container(
-  //                   decoration: const BoxDecoration(
-  //                     color: Colors.white,
-  //                     borderRadius: BorderRadius.only(
-  //                       topLeft: Radius.circular(30),
-  //                       topRight: Radius.circular(30),
-  //                     ),
-  //                   ),
-  //                   child: SingleChildScrollView(
-  //                     padding: const EdgeInsets.only(
-  //                       top: 65.0,
-  //                       left: 30,
-  //                       right: 30,
-  //                       bottom: 40,
-  //                     ),
-  //                     child: Column(
-  //                       crossAxisAlignment: CrossAxisAlignment.start,
-  //                       children: [
-  //                         // 1. Name
-  //                         Center(
-  //                           child: Text(
-  //                             'Hey,\n${profile.firstName}!',
-  //                             textAlign: TextAlign.center,
-  //                             style: primaryh2TextStyle.copyWith(
-  //                               fontSize: 30,
-  //                               height: 1.1,
-  //                             ),
-  //                           ),
-  //                         ),
-
-  //                         const SizedBox(height: 20),
-
-  //                         FutureBuilder<Map<String, dynamic>>(
-  //                           future: _fetchStats(profile.role, profile.id),
-  //                           builder: (context, statsSnapshot) {
-  //                             String leftLabel = "Requests";
-  //                             String leftValue = "-";
-  //                             String rightLabel = "Rating";
-  //                             String rightValue = "-";
-
-  //                             if (statsSnapshot.hasData) {
-  //                               final stats = statsSnapshot.data!;
-  //                               if (profile.role == 'volunteer') {
-  //                                 // Volunteer Stats
-  //                                 leftLabel = "Requests\nCompleted";
-  //                                 leftValue = stats['completed'].toString();
-  //                                 rightLabel = "Average\nRating";
-  //                                 rightValue = (stats['rating'] as double)
-  //                                     .toStringAsFixed(1);
-  //                                 if (rightValue == "0.0") rightValue = "-";
-  //                               } else {
-  //                                 // Senior Stats
-  //                                 leftLabel = "Requests\nMade";
-  //                                 leftValue = stats['total'].toString();
-  //                                 rightLabel = "Requests\nAccepted";
-  //                                 rightValue = stats['accepted'].toString();
-  //                               }
-  //                             }
-
-  //                             return Row(
-  //                               children: [
-  //                                 Expanded(
-  //                                   child: _buildStatBox(leftLabel, leftValue),
-  //                                 ),
-  //                                 const SizedBox(width: 16),
-  //                                 Expanded(
-  //                                   child: _buildStatBox(
-  //                                     rightLabel,
-  //                                     rightValue,
-  //                                   ),
-  //                                 ),
-  //                               ],
-  //                             );
-  //                           },
-  //                         ),
-
-  //                         const SizedBox(height: 20),
-
-  //                         // 3. Details List (Clean Layout)
-  //                         _buildSimpleDetail('First Name', profile.firstName),
-  //                         _buildSimpleDetail('Last Name', profile.lastName),
-  //                         _buildSimpleDetail('Email', email ?? '-'),
-  //                         _buildSimpleDetail('Phone Number', profile.phone),
-
-  //                         Row(
-  //                           children: [
-  //                             Expanded(
-  //                               child: _buildSimpleDetail(
-  //                                 'Birthday',
-  //                                 '${profile.dob.day}/${profile.dob.month}/${profile.dob.year}',
-  //                               ),
-  //                             ),
-  //                             Expanded(
-  //                               child: _buildSimpleDetail(
-  //                                 'Gender',
-  //                                 profile.gender ??
-  //                                     '-', // Assuming gender field exists
-  //                               ),
-  //                             ),
-  //                           ],
-  //                         ),
-
-  //                         const SizedBox(height: 30),
-
-  //                         // 4. Edit Profile Button
-  //                         Center(
-  //                           child: PrimaryOutlinedButton(
-  //                             text: 'Edit Profile',
-  //                             onPressed: () => _navigateToEdit(profile),
-  //                           ),
-  //                         ),
-  //                       ],
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ),
-
-  //               Positioned(
-  //                 top: 90, // Half in / Half out
-  //                 left: 0,
-  //                 right: 0,
-  //                 child: Center(
-  //                   child: Container(
-  //                     decoration: const BoxDecoration(
-  //                       shape: BoxShape.circle,
-  //                       boxShadow: [
-  //                         BoxShadow(
-  //                           color: Colors.black12,
-  //                           blurRadius: 15,
-  //                           offset: Offset(0, 8),
-  //                         ),
-  //                       ],
-  //                     ),
-  //                     child: CircleAvatar(
-  //                       radius: 50,
-  //                       backgroundColor: Colors.white,
-  //                       backgroundImage: avatarImage,
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ),
-
-  //               // --- LOGOUT / SETTINGS BUTTON ---
-  //               Positioned(
-  //                 top: 50,
-  //                 left: 20,
-  //                 child: GestureDetector(
-  //                   onTap: () async {
-  //                     await _authService.signOut();
-  //                     if (context.mounted) {
-  //                       Navigator.of(context).pushAndRemoveUntil(
-  //                         MaterialPageRoute(
-  //                           builder: (context) => const Emailloginflow(),
-  //                         ),
-  //                         (route) => false,
-  //                       );
-  //                     }
-  //                   },
-  //                   child: Container(
-  //                     padding: const EdgeInsets.all(8),
-  //                     decoration: BoxDecoration(
-  //                       color: Colors.white.withOpacity(0.8),
-  //                       shape: BoxShape.circle,
-  //                     ),
-  //                     child: const Icon(
-  //                       Icons.logout_rounded,
-  //                       color: AppColors.primaryOrange,
-  //                       size: 24,
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ),
-  //             ],
-  //           );
-  //         },
-  //       ),
-  //     ),
-  //   );
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -402,9 +181,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   leftLabel = "Requests\nCompleted";
                                   leftValue = stats['completed'].toString();
                                   rightLabel = "Average\nRating";
-                                  rightValue = (stats['rating'] as double)
-                                      .toStringAsFixed(1);
-                                  if (rightValue == "0.0") rightValue = "-";
+                                  rightValue = stats['rating'].toString();
                                 } else {
                                   // Senior Stats
                                   leftLabel = "Requests\nMade";
@@ -475,7 +252,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
                           const SizedBox(height: 30),
 
-                          // 4. Edit Profile Button
                           Center(
                             child: PrimaryOutlinedButton(
                               text: 'Edit Profile',
@@ -487,34 +263,54 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                 ),
-                // --- LOGOUT / SETTINGS BUTTON ---
-                Positioned(
-                  top: 60,
-                  left: 20,
-                  child: GestureDetector(
-                    onTap: () async {
-                      await _authService.signOut();
-                      if (context.mounted) {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => const Emailloginflow(),
+
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          await _authService.signOut();
+                          if (context.mounted) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const Emailloginflow(),
+                              ),
+                              (route) => false,
+                            );
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(204),
+                            shape: BoxShape.circle,
                           ),
-                          (route) => false,
-                        );
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        shape: BoxShape.circle,
+                          child: const Icon(
+                            Icons.logout_rounded,
+                            color: AppColors.primaryOrange,
+                            size: 24,
+                          ),
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.logout_rounded,
-                        color: AppColors.primaryOrange,
-                        size: 24,
+
+                      GestureDetector(
+                        onTap: _showDisplaySettings,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withAlpha(204),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.text_format,
+                            color: AppColors.primaryOrange,
+                            size: 24,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -567,21 +363,19 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Widget _buildSimpleDetail(IconData icon, String title, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: 22.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontFamily: 'Archivo',
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-              color: AppColors.primaryOrange, // Orange Label
+            style: primarypTextStyle.copyWith(
+              fontSize: 14,
+              color: AppColors.primaryOrange,
             ),
           ),
 
-          const SizedBox(height: 3),
+          const SizedBox(height: 4),
           Row(
             children: [
               Icon(icon, color: AppColors.mediumAlphaDarkBlue, size: 16),
@@ -596,6 +390,37 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showDisplaySettings() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(30.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Wrap content height
+            children: [
+              Text(
+                "Display Settings",
+                style: primaryh2TextStyle.copyWith(fontSize: 20),
+              ),
+              const SizedBox(height: 20),
+              const TextSizeAdjuster(), // <--- YOUR NEW COMPONENT
+              const SizedBox(height: 20),
+              PrimaryButton(
+                text: "Done",
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

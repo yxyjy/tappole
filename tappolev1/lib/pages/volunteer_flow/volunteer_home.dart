@@ -377,8 +377,8 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
                             MaterialPageRoute(
                               builder: (_) => VideoCallPage(
                                 callId: request.req_id,
-                                userId: currentUser.id,
-                                userName: "Volunteer",
+                                volunteerUserId: currentUser.id,
+                                volunteerUserName: "Volunteer",
                               ),
                             ),
                           );

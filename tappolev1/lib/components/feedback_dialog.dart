@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import '../services/feedback_service.dart';
 import '../theme/app_styles.dart';
 //import '../theme/app_colors.dart';
+import '../pages/senior_flow/senior_report.dart';
 
 class FeedbackDialog extends StatefulWidget {
   final String requestId;
+  final String volunteerId;
 
-  const FeedbackDialog({super.key, required this.requestId});
+  const FeedbackDialog({
+    super.key,
+    required this.requestId,
+    required this.volunteerId,
+  });
 
   @override
   State<FeedbackDialog> createState() => _FeedbackDialogState();
@@ -162,6 +168,27 @@ class _FeedbackDialogState extends State<FeedbackDialog> {
                         ),
                       ),
               ),
+            ),
+
+            SizedBox(height: 10),
+            // Example of a button to place inside your Feedback Dialog
+            TextButton.icon(
+              icon: const Icon(Icons.flag, color: Colors.red),
+              label: const Text(
+                "Report this User",
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ReportUserPage(reportedUserId: widget.volunteerId),
+                  ),
+                );
+              },
             ),
           ],
         ),

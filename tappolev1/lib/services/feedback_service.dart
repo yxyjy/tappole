@@ -46,4 +46,33 @@ class FeedbackService {
       return null;
     }
   }
+
+  // Future<void> submitReport({
+  //   required String requestId,
+  //   required int rating, // 1 = Sad, 2 = Neutral, 3 = Happy
+  // }) async {
+  //   final currentUser = _supabase.auth.currentUser;
+  //   if (currentUser == null) throw Exception("User not logged in");
+
+  //   final requestData = await _supabase
+  //       .from('requests')
+  //       .select('accepted_by')
+  //       .eq('req_id', requestId)
+  //       .single();
+
+  //   final String? volunteerId = requestData['accepted_by'];
+  //   if (volunteerId == null) {
+  //     throw Exception(
+  //       "Cannot submit feedback: No volunteer associated with this request.",
+  //     );
+  //   }
+
+  //   // 2. Insert into feedback table
+  //   await _supabase.from('feedback').insert({
+  //     'provided_by': currentUser.id,
+  //     'provided_to': volunteerId,
+  //     'request': requestId,
+  //     'feedback_rating': rating,
+  //   });
+  // }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tappolev1/auth_gate.dart';
+import 'package:provider/provider.dart'; // Make sure you have the 'provider' package
+import 'providers/text_size_provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -12,7 +14,14 @@ Future<void> main() async {
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBveXFwZGVxYXlldXhweHpjY2FzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEzODg0MjMsImV4cCI6MjA3Njk2NDQyM30._F726QxQw0t1yZ0-fBNgwi8N2r541a32FfLybX-diiQ',
   );
-  runApp(MyApp());
+  // runApp(MyApp());
+
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => TextSizeProvider())],
+      child: const MyApp(),
+    ),
+  );
 }
 
 final supabase = Supabase.instance.client;
@@ -22,9 +31,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textSizeProvider = Provider.of<TextSizeProvider>(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
+
+      builder: (context, child) {
+        final mediaQueryData = MediaQuery.of(context);
+        return MediaQuery(
+          data: mediaQueryData.copyWith(
+            textScaler: TextScaler.linear(textSizeProvider.textScale),
+          ),
+          child: child!,
+        );
+      },
+
       home: AuthGate(),
     );
   }

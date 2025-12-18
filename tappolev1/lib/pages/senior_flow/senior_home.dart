@@ -55,7 +55,7 @@ class _SeniorHomePageState extends State<SeniorHomePage> {
                 borderRadius: BorderRadius.circular(100.0),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFF06638).withAlpha(80),
+                    color: AppColors.primaryOrange.withAlpha(80),
                     spreadRadius: 10,
                     blurRadius: 50,
                     offset: const Offset(0, 0),
@@ -64,7 +64,7 @@ class _SeniorHomePageState extends State<SeniorHomePage> {
               ),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF06638),
+                  backgroundColor: AppColors.primaryOrange,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 40.0,
                     vertical: 40.0,
@@ -86,15 +86,9 @@ class _SeniorHomePageState extends State<SeniorHomePage> {
 
             const SizedBox(height: 20),
 
-            const Text(
+            Text(
               'Tap to make a request!',
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.05,
-                fontFamily: 'Archivo',
-                fontWeight: FontWeight.w300,
-                color: Color(0xFF192133),
-              ),
+              style: primarypTextStyle,
               textAlign: TextAlign.center,
             ),
           ],

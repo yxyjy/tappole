@@ -1,7 +1,7 @@
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/profile.dart';
-import 'dart:io';
+//import 'dart:io';
 
 class ProfileService {
   final _supabase = Supabase.instance.client;
@@ -87,22 +87,6 @@ class ProfileService {
         .update({'profile_picture': avatarUrl})
         .eq('id', userId);
   }
-
-  // Future<Map<String, dynamic>?> getPublicUserInfo(String userId) async {
-  //   try {
-  //     final data = await _supabase
-  //         .from('profiles')
-  //         .select(
-  //           'first_name, last_name, avatar_url',
-  //         ) // Fetch only what we need
-  //         .eq('id', userId)
-  //         .single();
-  //     return data;
-  //   } catch (e) {
-  //     // If the user is deleted or error occurs, return null to handle gracefully
-  //     return null;
-  //   }
-  // }
 
   Future<Map<String, dynamic>?> getPublicUserInfo(String userId) async {
     print("🔍 FETCHING PROFILE FOR ID: $userId"); // Is this ID valid?

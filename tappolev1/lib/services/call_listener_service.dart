@@ -1,90 +1,3 @@
-// import 'package:flutter/material.dart';
-// import 'package:supabase_flutter/supabase_flutter.dart';
-// import '../main.dart';
-// import '../pages/video_call/video_call_page.dart';
-// import '../components/feedback_dialog.dart'; // <--- Import this
-
-// class CallListenerService {
-//   final _supabase = Supabase.instance.client;
-//   RealtimeChannel? _channel;
-
-//   void startListening(String seniorId) {
-//     if (_channel != null) return;
-
-//     print("🎧 Started listening for calls for Senior: $seniorId");
-
-//     _channel = _supabase.channel('public:video_calls');
-
-//     _channel!
-//         .onPostgresChanges(
-//           event: PostgresChangeEvent.insert,
-//           schema: 'public',
-//           table: 'video_calls',
-//           filter: PostgresChangeFilter(
-//             type: PostgresChangeFilterType.eq,
-//             column: 'received_by',
-//             value: seniorId,
-//           ),
-//           callback: (payload) {
-//             print("🔔 Incoming call event received!");
-//             _handleIncomingCall(payload.newRecord);
-//           },
-//         )
-//         .subscribe();
-//   }
-
-//   // --- UPDATED HANDLER ---
-//   Future<void> _handleIncomingCall(Map<String, dynamic> record) async {
-//     final String? callId = record['request_id'];
-//     final currentUser = _supabase.auth.currentUser;
-
-//     if (callId != null &&
-//         currentUser != null &&
-//         navigatorKey.currentState != null) {
-//       print("📞 Starting Call UI. Call ID: $callId");
-
-//       // 1. Push the Video Call Page and WAIT (await) for it to close
-//       await navigatorKey.currentState!.push(
-//         MaterialPageRoute(
-//           builder: (_) => VideoCallPage(
-//             callId: callId,
-//             userId: currentUser.id,
-//             userName: currentUser.userMetadata?['first_name'] ?? 'Senior',
-//             // isSenior: true, // If you added the flag to VideoCallPage, pass it here
-//           ),
-//         ),
-//       );
-
-//       // 2. CODE HERE RUNS AFTER THE CALL ENDS (User hung up)
-//       print("🏁 Call ended. Showing Feedback Dialog.");
-
-//       final context = navigatorKey.currentContext;
-
-//       if (context != null && context.mounted) {
-//         showDialog(
-//           context: context,
-//           barrierDismissible: false, // Force them to rate
-//           builder: (_) => FeedbackDialog(
-//             requestId: callId, // Pass the ID so we know what request to rate
-//           ),
-//         );
-//       }
-//     } else {
-//       print("⚠️ Call detected but missing data or Navigator.");
-//     }
-//   }
-
-//   void stopListening() {
-//     if (_channel != null) {
-//       print("🛑 Stopped listening for calls.");
-//       _supabase.removeChannel(_channel!);
-//       _channel = null;
-//     }
-//   }
-// }
-
-// final callListener = CallListenerService();
-
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
@@ -158,8 +71,10 @@ class CallListenerService {
           MaterialPageRoute(
             builder: (_) => VideoCallPage(
               callId: callId,
-              userId: currentUser.id,
-              userName: "Senior", // Or fetch real name
+              volunteerUserId: currentUser.id,
+              volunteerUserName: "Volunteer", // Or fetch real name
+              // volunteerId: volunteerId,
+              // volunteerName: "Volunteer", // Or fetch real name
             ),
           ),
         );
@@ -171,7 +86,8 @@ class CallListenerService {
           showDialog(
             context: context,
             barrierDismissible: false,
-            builder: (_) => FeedbackDialog(requestId: callId),
+            builder: (_) =>
+                FeedbackDialog(requestId: callId, volunteerId: volunteerId),
           );
         }
       } else {
@@ -183,21 +99,16 @@ class CallListenerService {
     }
   }
 
-  /// Stop listening (Call this on Logout)
   Future<void> stopListening() async {
-    // If the channel is already null, do nothing
     if (_channel == null) return;
 
     print("🛑 Safely removing channel...");
 
-    // 1. Copy the channel to a temp variable
     final tempChannel = _channel;
 
-    // 2. Nullify the global variable IMMEDIATELY to prevent race conditions
     _channel = null;
 
     try {
-      // 3. Unsubscribe on the temp variable
       await _supabase.removeChannel(tempChannel!);
     } catch (e) {
       print("⚠️ Channel already disconnected or error removing: $e");
