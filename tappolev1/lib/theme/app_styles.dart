@@ -87,7 +87,7 @@ final lighth2TextStyle = TextStyle(
 final primarypTextStyle = TextStyle(
   height: 1.0,
   color: AppColors.primaryDarkBlue,
-  fontSize: 15,
+  fontSize: 16,
   fontFamily: 'Archivo',
   fontWeight: FontWeight.w100,
 );
@@ -95,7 +95,7 @@ final primarypTextStyle = TextStyle(
 final lightpTextStyle = TextStyle(
   height: 1.0,
   color: AppColors.white,
-  fontSize: 15,
+  fontSize: 16,
   fontFamily: 'Archivo',
   fontWeight: FontWeight.w100,
 );

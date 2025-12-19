@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tappolev1/auth_gate.dart';
 import 'package:tappolev1/pages/auth/emailloginflow.dart';
 import 'package:tappolev1/pages/general/edit_profile.dart';
 import 'package:tappolev1/services/auth_service.dart';
@@ -270,17 +271,18 @@ class _ProfilePageState extends State<ProfilePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GestureDetector(
-                        onTap: () async {
-                          await _authService.signOut();
-                          if (context.mounted) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (context) => const Emailloginflow(),
-                              ),
-                              (route) => false,
-                            );
-                          }
-                        },
+                        onTap: () => _showConfirmLogoutDialog(context),
+                        // onTap: () async {
+                        //   await _authService.signOut();
+                        //   if (context.mounted) {
+                        //     Navigator.of(context).pushAndRemoveUntil(
+                        //       MaterialPageRoute(
+                        //         builder: (context) => const Emailloginflow(),
+                        //       ),
+                        //       (route) => false,
+                        //     );
+                        //   }
+                        // },
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -421,6 +423,102 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         );
       },
+    );
+  }
+
+  void _showConfirmLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          "Confirm Log Out",
+          style: primarypTextStyle.copyWith(fontSize: 20),
+        ),
+        content: Text(
+          "Are you sure you want to log out?",
+          style: primarypTextStyle,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "No",
+              style: primarypTextStyle.copyWith(color: Colors.grey),
+            ),
+          ),
+
+          // 'Yes' Button
+          PrimaryButton(
+            onPressed: () async {
+              await _authService.signOut();
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const AuthGate()),
+                  (route) => false,
+                );
+              }
+            },
+            text: "Log Out",
+          ),
+          // TextButton(
+          //   onPressed: () async {
+          //     await _authService.signOut();
+          //     if (context.mounted) {
+          //       Navigator.of(context).pushAndRemoveUntil(
+          //         MaterialPageRoute(builder: (context) => const AuthGate()),
+          //         (route) => false,
+          //       );
+          //     }
+          //   },
+          //   // onPressed: () async {
+          //   //   try {
+          //   //     await _requestService.cancelRequest(request.req_id);
+
+          //   //     if (context.mounted) {
+          //   //       Navigator.of(context).pop();
+          //   //       Navigator.of(context).pop();
+
+          //   //       setState(() {
+          //   //         _requestsFuture = _requestService.getRequestsBySenior();
+          //   //       });
+
+          //   //       ScaffoldMessenger.of(context).showSnackBar(
+          //   //         SnackBar(
+          //   //           content: Text(
+          //   //             "Request cancelled successfully",
+          //   //             style: primarypTextStyle,
+          //   //           ),
+          //   //           backgroundColor: Colors.grey,
+          //   //         ),
+          //   //       );
+          //   //     }
+          //   //   } catch (e) {
+          //   //     print("Cancel Error: $e");
+          //   //     if (context.mounted) {
+          //   //       Navigator.pop(context);
+          //   //       ScaffoldMessenger.of(context).showSnackBar(
+          //   //         SnackBar(
+          //   //           content: Text(
+          //   //             "Failed to cancel: $e",
+          //   //             style: primarypTextStyle,
+          //   //           ),
+          //   //         ),
+          //   //       );
+          //   //     }
+          //   //   }
+          //   // },
+          //   child: Text(
+          //     "Yes, Log Out",
+          //     style: primarypTextStyle.copyWith(
+          //       color: Colors.red,
+          //       fontWeight: FontWeight.bold,
+          //     ),
+          //   ),
+          // ),
+        ],
+      ),
     );
   }
 }

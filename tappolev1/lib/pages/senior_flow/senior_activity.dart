@@ -458,10 +458,25 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                       child: PrimaryButton(
                         backgroundColor: Colors.white,
                         border: BorderSide(
-                          color: const Color.fromARGB(255, 255, 48, 48),
+                          color: const Color.fromARGB(255, 119, 119, 119),
                           width: 1.2,
                         ),
-                        textColor: const Color.fromARGB(255, 255, 48, 48),
+                        textColor: const Color.fromARGB(255, 119, 119, 119),
+                        boxDecoration: BoxDecoration(
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color.fromARGB(
+                                255,
+                                171,
+                                171,
+                                171,
+                              ).withAlpha(0),
+                              spreadRadius: 5,
+                              blurRadius: 15,
+                              offset: const Offset(0, 0),
+                            ),
+                          ],
+                        ),
                         onPressed: () {
                           _showConfirmCancelDialog(context, request);
                         },
@@ -485,9 +500,9 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
               else
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     "Close",
-                    style: TextStyle(color: Colors.grey),
+                    style: primarypTextStyle.copyWith(color: Colors.grey),
                   ),
                 ),
             ],
@@ -522,6 +537,7 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
+                    style: primarypTextStyle,
                     controller: controller,
                     maxLines: 5,
                     minLines: 3,
@@ -542,9 +558,9 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
               actions: [
                 TextButton(
                   onPressed: _isUpdating ? null : () => Navigator.pop(context),
-                  child: const Text(
+                  child: Text(
                     "Cancel",
-                    style: TextStyle(color: Colors.grey),
+                    style: primarypTextStyle.copyWith(color: Colors.grey),
                   ),
                 ),
                 ElevatedButton(
@@ -552,6 +568,10 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                     backgroundColor: const Color(0xFFF06638),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
+                    ),
+                    textStyle: primarypTextStyle.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   onPressed: _isUpdating
@@ -569,7 +589,7 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                             );
 
                             if (context.mounted) {
-                              Navigator.pop(context); // Close Edit Dialog
+                              Navigator.pop(context);
 
                               this.setState(() {
                                 _requestsFuture = _requestService
@@ -612,23 +632,21 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           "Confirm Cancel",
-          style: TextStyle(
-            fontFamily: 'Archivo',
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
+          style: primarypTextStyle.copyWith(fontSize: 20),
         ),
-        content: const Text(
+        content: Text(
           "Are you sure you want to cancel this request?",
-          style: TextStyle(fontSize: 16),
+          style: primarypTextStyle,
         ),
         actions: [
-          // 'No' Button
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("No", style: TextStyle(color: Colors.grey)),
+            child: Text(
+              "No",
+              style: primarypTextStyle.copyWith(color: Colors.grey),
+            ),
           ),
 
           // 'Yes' Button
@@ -646,8 +664,11 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                   });
 
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Request cancelled successfully"),
+                    SnackBar(
+                      content: Text(
+                        "Request cancelled successfully",
+                        style: primarypTextStyle,
+                      ),
                       backgroundColor: Colors.grey,
                     ),
                   );
@@ -655,16 +676,24 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
               } catch (e) {
                 print("Cancel Error: $e");
                 if (context.mounted) {
-                  Navigator.pop(context); // Close only confirm dialog
+                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Failed to cancel: $e")),
+                    SnackBar(
+                      content: Text(
+                        "Failed to cancel: $e",
+                        style: primarypTextStyle,
+                      ),
+                    ),
                   );
                 }
               }
             },
-            child: const Text(
+            child: Text(
               "Yes, Cancel",
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              style: primarypTextStyle.copyWith(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

@@ -10,6 +10,7 @@ class PrimaryButton extends StatelessWidget {
   final Color? textColor;
   final BorderSide? border;
   final TextStyle? textStyle;
+  final BoxDecoration? boxDecoration;
 
   const PrimaryButton({
     super.key,
@@ -19,21 +20,24 @@ class PrimaryButton extends StatelessWidget {
     this.textColor,
     this.border,
     this.textStyle,
+    this.boxDecoration,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryOrange.withAlpha(20),
-            spreadRadius: 10,
-            blurRadius: 30,
-            offset: const Offset(0, 0),
+      decoration:
+          boxDecoration ??
+          BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryOrange.withAlpha(20),
+                spreadRadius: 10,
+                blurRadius: 30,
+                offset: const Offset(0, 0),
+              ),
+            ],
           ),
-        ],
-      ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor ?? AppColors.primaryOrange,
