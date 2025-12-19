@@ -3,7 +3,6 @@
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)
 ![Supabase](https://img.shields.io/badge/Supabase-Backend-green?logo=supabase)
 ![ZegoCloud](https://img.shields.io/badge/ZegoCloud-RTC-orange)
-![License](https://img.shields.io/badge/License-MIT-purple)
 
 **Tappole** is a cross-platform mobile application designed to bridge the digital divide for the elderly. It facilitates accessible, one-tap video connections between seniors and verified volunteers, ensuring social inclusion through a safe, simplified, and high-contrast interface.
 
