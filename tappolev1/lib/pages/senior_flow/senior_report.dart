@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tappolev1/components/primary_button.dart';
+import 'package:tappolev1/components/styled_snackbar.dart';
 import 'package:tappolev1/theme/app_styles.dart';
 
 class ReportUserPage extends StatefulWidget {
@@ -33,8 +34,10 @@ class _ReportUserPageState extends State<ReportUserPage> {
 
   Future<void> _submitReport() async {
     if (_selectedReason == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a reason for the report.')),
+      StyledSnackbar.show(
+        context: context,
+        message: "Please select a reason for the report.",
+        type: SnackbarType.warning,
       );
       return;
     }
@@ -74,9 +77,11 @@ class _ReportUserPageState extends State<ReportUserPage> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error sending report: $e')));
+        StyledSnackbar.show(
+          context: context,
+          message: 'Error sending report: $e',
+          type: SnackbarType.error,
+        );
       }
     } finally {
       if (mounted) {

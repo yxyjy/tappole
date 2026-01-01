@@ -6,6 +6,7 @@ import '../../models/profile.dart';
 import '../../theme/app_styles.dart';
 import '../../theme/app_colors.dart';
 import '../../components/primary_button.dart';
+import '../../components/styled_snackbar.dart';
 
 class SeniorActivityPage extends StatefulWidget {
   const SeniorActivityPage({super.key});
@@ -234,19 +235,19 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
 
     switch (status) {
       case 'pending':
-        statusBgColor = const Color(0xFFFFC525);
+        statusBgColor = AppColors.warningOrange;
+        statusTextColor = Colors.white;
         break;
       case 'accepted':
-        statusBgColor = const Color(0xFF27B533);
+        statusBgColor = AppColors.successGreen;
         statusTextColor = Colors.white;
         break;
       case 'completed':
-        statusBgColor = const Color.fromARGB(255, 39, 70, 181);
+        statusBgColor = AppColors.infoBlue;
         statusTextColor = Colors.white;
         break;
       case 'cancelled':
-        statusBgColor = const Color.fromARGB(255, 219, 219, 219);
-        statusTextColor = const Color.fromARGB(255, 91, 91, 91);
+        statusBgColor = AppColors.cancelledGrey;
         break;
       default:
         statusBgColor = const Color.fromARGB(255, 255, 255, 255);
@@ -359,23 +360,22 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
     final String status = request.req_status;
 
     Color statusBgColor;
-    Color statusTextColor = Colors.black;
+    Color statusTextColor = AppColors.primaryDarkBlue;
 
     switch (status) {
       case 'pending':
-        statusBgColor = const Color(0xFFFFC525);
+        statusBgColor = AppColors.warningOrange;
         break;
       case 'accepted':
-        statusBgColor = const Color(0xFFF06638);
+        statusBgColor = AppColors.successGreen;
         statusTextColor = Colors.white;
         break;
       case 'completed':
-        statusBgColor = const Color(0xFF27B533);
+        statusBgColor = AppColors.infoBlue;
         statusTextColor = Colors.white;
         break;
       case 'cancelled':
-        statusBgColor = const Color(0xFFC84949);
-        statusTextColor = Colors.white;
+        statusBgColor = AppColors.cancelledGrey;
         break;
       default:
         statusBgColor = Colors.grey.shade300;
@@ -596,23 +596,24 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                                     .getRequestsBySenior();
                               });
 
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    "Request updated successfully!",
-                                  ),
-                                ),
+                              StyledSnackbar.show(
+                                context: context,
+                                message: "Request updated successfully!",
+                                type: SnackbarType.success,
                               );
                             }
                           } catch (e) {
                             if (context.mounted) {
                               setState(() => _isUpdating = false);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Failed to update: $e")),
+                              StyledSnackbar.show(
+                                context: context,
+                                message: "Failed to update: $e",
+                                type: SnackbarType.error,
                               );
                             }
                           }
                         },
+
                   child: const Text(
                     "Save",
                     style: TextStyle(color: Colors.white),
@@ -663,27 +664,20 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
                     _requestsFuture = _requestService.getRequestsBySenior();
                   });
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        "Request cancelled successfully",
-                        style: primarypTextStyle,
-                      ),
-                      backgroundColor: Colors.grey,
-                    ),
+                  StyledSnackbar.show(
+                    context: context,
+                    message: "Request cancelled successfully",
+                    type: SnackbarType.success,
                   );
                 }
               } catch (e) {
                 print("Cancel Error: $e");
                 if (context.mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        "Failed to cancel: $e",
-                        style: primarypTextStyle,
-                      ),
-                    ),
+                  StyledSnackbar.show(
+                    context: context,
+                    message: "Failed to cancel: $e",
+                    type: SnackbarType.error,
                   );
                 }
               }
@@ -691,7 +685,7 @@ class _SeniorActivityPageState extends State<SeniorActivityPage> {
             child: Text(
               "Yes, Cancel",
               style: primarypTextStyle.copyWith(
-                color: Colors.red,
+                color: AppColors.errorOrange,
                 fontWeight: FontWeight.bold,
               ),
             ),

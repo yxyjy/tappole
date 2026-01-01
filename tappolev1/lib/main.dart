@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tappolev1/auth_gate.dart';
-import 'package:provider/provider.dart'; // Make sure you have the 'provider' package
+import 'package:provider/provider.dart';
 import 'providers/text_size_provider.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

@@ -1,49 +1,8 @@
-// import 'package:flutter/material.dart';
-// // import 'package:zego_uiki/zego_uiki.dart';
-// import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-
-// class VideoCallPage extends StatelessWidget {
-//   final String callId; // This will be the request_id
-//   final String userId;
-//   final String userName;
-
-//   const VideoCallPage({
-//     super.key,
-//     required this.callId,
-//     required this.userId,
-//     required this.userName,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     const int appID = 945550209;
-//     const String appSign =
-//         "225afaa38cde36702fa483c447b56d75a16e73ec026f71f2a69047e8c1a2215d";
-
-//     return ZegoUIKitPrebuiltCall(
-//       appID: appID,
-//       appSign: appSign,
-//       userID: userId,
-//       userName: userName,
-//       callID: callId,
-
-//       // Configuration for a 1-on-1 Video Call
-//       config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
-
-//       events: ZegoUIKitPrebuiltCallEvents(
-//         onCallEnd: (event, defaultAction) {
-//           Navigator.of(context).pop();
-//         },
-//       ),
-//     );
-//   }
-// }
-
-import 'dart:async'; // Required for Timer
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:tappolev1/components/styled_snackbar.dart';
 import 'package:zego_uikit/zego_uikit.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
-// import 'package:zego_uikit_signaling_plugin/zego_uikit_signaling_plugin.dart'; // Optional: If you use the signaling plugin
 
 class VideoCallPage extends StatefulWidget {
   final String callId;
@@ -69,18 +28,17 @@ class _VideoCallPageState extends State<VideoCallPage> {
   void initState() {
     super.initState();
 
-    _safetyTimer = Timer(const Duration(seconds: 15), () {
+    //timeout after 30 seconds if not connected
+    _safetyTimer = Timer(const Duration(seconds: 30), () {
       if (mounted && !_hasJoined) {
-        print("⚠️ Video Call Init Timed Out - Force Closing");
+        //debug print
+        print("Forcefully ending call due to timeout.");
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
+        StyledSnackbar.show(
+          context: context,
+          message:
               "Connection timed out. Please check your internet or permissions.",
-            ),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 4),
-          ),
+          type: SnackbarType.error,
         );
 
         Navigator.of(context).pop();
@@ -96,9 +54,15 @@ class _VideoCallPageState extends State<VideoCallPage> {
 
   @override
   Widget build(BuildContext context) {
-    const int appID = 945550209;
+    //old call api ID
+    // const int appID = 945550209;
+    // const String appSign =
+    //     "225afaa38cde36702fa483c447b56d75a16e73ec026f71f2a69047e8c1a2215d";
+
+    //new call api ID
+    const int appID = 430728164;
     const String appSign =
-        "225afaa38cde36702fa483c447b56d75a16e73ec026f71f2a69047e8c1a2215d";
+        "5f0034ccb83a9a58af53cc1350d8776e907aca955fd0704f546c8b02a5011ef7";
 
     return ZegoUIKitPrebuiltCall(
       appID: appID,
@@ -118,14 +82,14 @@ class _VideoCallPageState extends State<VideoCallPage> {
               setState(() {
                 _hasJoined = true;
               });
-              _safetyTimer?.cancel(); // 🛑 Stop the timer
-              print("✅ Connected successfully. Safety timer cancelled.");
+              _safetyTimer?.cancel();
+              print("Connected successfully. Safety timer cancelled.");
             }
           },
         ),
 
         onCallEnd: (event, defaultAction) {
-          print("🏁 Call ended by user.");
+          print("Call ended by user.");
           _safetyTimer?.cancel();
           Navigator.of(context).pop();
         },

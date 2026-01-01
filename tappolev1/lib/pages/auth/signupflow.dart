@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tappolev1/components/styled_snackbar.dart';
 import 'package:tappolev1/services/auth_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
@@ -80,7 +81,6 @@ class _SignupflowState extends State<Signupflow> {
     });
 
     try {
-      // 1. Create the user
       final authResponse = await _authService.signUpWithEmailPassword(
         _email,
         _password,
@@ -92,7 +92,6 @@ class _SignupflowState extends State<Signupflow> {
 
       final userId = authResponse.user!.id;
 
-      // 2. Insert profile data
       await supabase.from('profiles').insert({
         'id': userId,
         'role': _role,
@@ -103,34 +102,30 @@ class _SignupflowState extends State<Signupflow> {
         'gender': gender,
       });
 
-      // --- THE FIX ---
-      // 3. Immediately sign out.
-      // This prevents AuthGate from seeing a valid session and auto-redirecting to Home.
       await supabase.auth.signOut();
-      // ----------------
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Success! Please check your email to verify your account.',
-          ),
-          backgroundColor: Colors.green,
-        ),
+      StyledSnackbar.show(
+        context: context,
+        message: 'Sign up successful! Please login with your new credentials.',
+        type: SnackbarType.success,
       );
 
-      // 4. Navigate back to the Login Screen
       Navigator.of(context).pop();
     } on AuthException catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.message)));
+      StyledSnackbar.show(
+        context: context,
+        message: e.message,
+        type: SnackbarType.error,
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An unexpected error occurred: $e')),
+      StyledSnackbar.show(
+        context: context,
+        message: 'An unexpected error occurred: $e',
+        type: SnackbarType.error,
       );
     } finally {
       if (mounted) {
@@ -189,10 +184,6 @@ class _SignupflowState extends State<Signupflow> {
   }
 }
 
-// ====================================================================
-// NEW: ONBOARDING STEP
-// ====================================================================
-
 class OnboardingStep extends StatefulWidget {
   final VoidCallback onComplete;
 
@@ -211,8 +202,7 @@ class _OnboardingStepState extends State<OnboardingStep> {
       'title': 'Welcome\nto Tappole!',
       'description':
           'Welcome to Tappole, where you can seek for digital help or offer a kind hand!',
-      'image':
-          'assets/images/onboarding1.png', // You'll need to add these images
+      'image': 'assets/images/onboarding1.png',
     },
     {
       'title': 'If you are a\nsenior...',
@@ -231,10 +221,9 @@ class _OnboardingStepState extends State<OnboardingStep> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF192133),
+      backgroundColor: AppColors.primaryDarkBlue,
       body: Stack(
         children: [
-          // PageView for swiping
           PageView.builder(
             controller: _pageController,
             onPageChanged: (index) {
@@ -246,30 +235,12 @@ class _OnboardingStepState extends State<OnboardingStep> {
               return Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Background Image
                   Image.asset(page['image']!, fit: BoxFit.cover),
-                  // Gradient Overlay to make text readable
-                  // Container(
-                  //   decoration: BoxDecoration(
-                  //     gradient: LinearGradient(
-                  //       begin: Alignment.topCenter,
-                  //       end: Alignment.bottomCenter,
-                  //       stops: const [0.0, 0.6, 1.0],
-                  //       colors: [
-                  //         Colors.transparent,
-                  //         const Color(0xFF192133).withOpacity(0.5),
-                  //         const Color(0xFF192133), // Solid dark at bottom
-                  //       ],
-                  //     ),
-                  //   ),
-                  // ),
-                  // Text Content
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // Logo (Only on first page maybe? Or generic icon)
                         Image.asset('assets/images/logo2.png', height: 100),
                         const SizedBox(height: 20),
                         Text(
@@ -292,7 +263,6 @@ class _OnboardingStepState extends State<OnboardingStep> {
             },
           ),
 
-          // Indicators and Navigation
           Positioned(
             bottom: 30,
             left: 0,
@@ -317,7 +287,6 @@ class _OnboardingStepState extends State<OnboardingStep> {
                   ),
                 ),
 
-                // const SizedBox(height: 30),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: Row(
@@ -337,8 +306,8 @@ class _OnboardingStepState extends State<OnboardingStep> {
                                 );
                               },
                             )
-                          : const SizedBox(width: 48), // Spacer
-                      // Forward Arrow
+                          : const SizedBox(width: 48),
+
                       IconButton(
                         icon: const Icon(
                           Icons.chevron_right,
@@ -352,7 +321,6 @@ class _OnboardingStepState extends State<OnboardingStep> {
                               curve: Curves.easeInOut,
                             );
                           } else {
-                            // On Last Page -> Complete Onboarding
                             widget.onComplete();
                           }
                         },
@@ -422,8 +390,6 @@ class _RoleSelectionStepState extends State<RoleSelectionStep> {
 
             const SizedBox(height: 60),
 
-            // --- Confirm Button ---
-            // Visually disabled (dimmed) if no role is selected
             AnimatedOpacity(
               duration: const Duration(milliseconds: 300),
               opacity: _selectedRole != null ? 1.0 : 0.5,
@@ -431,7 +397,13 @@ class _RoleSelectionStepState extends State<RoleSelectionStep> {
                 text: 'Confirm',
                 onPressed: _selectedRole != null
                     ? () => widget.onRoleSelected(_selectedRole!)
-                    : () {}, // Do nothing if no role selected
+                    : () {
+                        StyledSnackbar.show(
+                          context: context,
+                          message: 'Please select a role to continue.',
+                          type: SnackbarType.info,
+                        );
+                      },
               ),
             ),
           ],
@@ -457,11 +429,9 @@ class _RoleSelectionStepState extends State<RoleSelectionStep> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          // Filled Orange if selected, Transparent if not
           color: isSelected ? AppColors.primaryOrange : Colors.transparent,
-          borderRadius: BorderRadius.circular(30), // Rounded pill shape
+          borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            // Orange border if selected, White border if not
             color: isSelected ? AppColors.primaryOrange : Colors.white,
             width: 1,
           ),
@@ -480,13 +450,6 @@ class _RoleSelectionStepState extends State<RoleSelectionStep> {
     );
   }
 }
-// ====================================================================
-// 3. EMAIL & PASSWORD
-// ====================================================================
-
-// ====================================================================
-// 3. EMAIL & PASSWORD (UPDATED)
-// ====================================================================
 
 class SignupEmailPasswordStep extends StatefulWidget {
   final Function(String email, String password) onSubmitted;
@@ -523,7 +486,6 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
     if (!isValid) {
       return;
     }
-    // Pass data to parent
     widget.onSubmitted(_emailController.text, _passwordController.text);
   }
 
@@ -533,7 +495,6 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        // 1. Reduced padding from 50.0 to 24.0 to bring elements closer to edge
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -586,7 +547,6 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
                 ),
                 const SizedBox(height: 30),
 
-                // --- Email ---
                 TextFormField(
                   style: primaryInputLabelTextStyle,
                   controller: _emailController,
@@ -605,7 +565,6 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
                 ),
                 const SizedBox(height: 10),
 
-                // --- Password ---
                 TextFormField(
                   style: primaryInputLabelTextStyle,
                   controller: _passwordController,
@@ -622,7 +581,6 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
                 ),
                 const SizedBox(height: 10),
 
-                // --- Confirm Password ---
                 TextFormField(
                   style: primaryInputLabelTextStyle,
                   controller: _confirmPasswordController,
@@ -639,7 +597,6 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
                 ),
                 const SizedBox(height: 40),
 
-                // --- "Continue" Button ---
                 PrimaryButton(text: 'Continue', onPressed: _trySubmitForm),
                 const SizedBox(height: 40),
               ],
@@ -650,10 +607,6 @@ class _SignupEmailPasswordStepState extends State<SignupEmailPasswordStep> {
     );
   }
 }
-
-// ====================================================================
-// 4. USER DETAILS
-// ====================================================================
 
 class UserDetailsStep extends StatefulWidget {
   final Function(
@@ -779,11 +732,6 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                   ],
                 ),
                 SizedBox(height: 20),
-                // Image(
-                //   image: AssetImage('assets/images/logo3.png'),
-                //   height: 80.0,
-                // ),
-                // SizedBox(height: 10),
                 Text(
                   'Hey ${widget.role}, great to see you here!',
                   style: primaryh2TextStyle.copyWith(fontSize: 32),
@@ -797,7 +745,6 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                 ),
                 SizedBox(height: 30),
 
-                // --- First Name ---
                 TextFormField(
                   style: primaryInputLabelTextStyle,
                   controller: _firstNameController,
@@ -814,7 +761,6 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                 ),
                 const SizedBox(height: 18),
 
-                // --- Last Name ---
                 TextFormField(
                   style: primaryInputLabelTextStyle,
                   controller: _lastNameController,
@@ -831,7 +777,6 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                 ),
                 const SizedBox(height: 18),
 
-                // --- Phone Number ---
                 TextFormField(
                   style: primaryInputLabelTextStyle,
                   controller: _phoneController,
@@ -841,20 +786,16 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                   ),
                   keyboardType: TextInputType.phone,
 
-                  // 2. Add Formatters here
                   inputFormatters: [
-                    FilteringTextInputFormatter
-                        .digitsOnly, // Deny spaces, dashes, dots
-                    LengthLimitingTextInputFormatter(
-                      11,
-                    ), // Limit to 10 or 11 digits
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(11),
                   ],
 
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter your phone number.';
                     }
-                    // Optional: Validate length
+
                     if (value.length < 8) {
                       return 'Phone number is too short.';
                     }
@@ -863,37 +804,50 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                 ),
                 const SizedBox(height: 18),
 
-                // --- Date of Birth ---
                 TextFormField(
                   style: primaryInputLabelTextStyle,
                   controller: _dobController,
                   decoration: primaryInputDecoration.copyWith(
                     labelText: 'Date of Birth',
-                    suffixIcon: Icon(Icons.calendar_today),
+                    suffixIcon: const Icon(Icons.calendar_today),
                   ),
                   readOnly: true,
                   onTap: () => _selectDate(context),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    if (value == null ||
+                        value.isEmpty ||
+                        _selectedDate == null) {
                       return 'Please select your date of birth.';
                     }
+
+                    if (widget.role == 'senior') {
+                      final now = DateTime.now();
+                      int age = now.year - _selectedDate!.year;
+                      if (now.month < _selectedDate!.month ||
+                          (now.month == _selectedDate!.month &&
+                              now.day < _selectedDate!.day)) {
+                        age--;
+                      }
+
+                      if (age < 55) {
+                        return 'You must be at least 55 years old as a senior.';
+                      }
+                    }
+
                     return null;
                   },
                 ),
                 const SizedBox(height: 18),
 
-                // --- Gender ---
                 DropdownButtonFormField<String>(
                   value: _selectedGender,
                   decoration: primaryInputDecoration.copyWith(
                     labelText: 'Gender',
                   ),
-                  hint: const Text(
+                  hint: Text(
                     'Select Gender',
-                    style: TextStyle(
-                      color: Color(0x80192133),
-                      fontFamily: 'Archivo',
-                      fontWeight: FontWeight.w300,
+                    style: primarypTextStyle.copyWith(
+                      color: AppColors.mediumAlphaDarkBlue,
                     ),
                   ),
                   items: _genderOptions.map((String gender) {
@@ -916,11 +870,7 @@ class _UserDetailsStepState extends State<UserDetailsStep> {
                 ),
                 const SizedBox(height: 40),
 
-                // --- Submit Button ---
-                PrimaryButton(
-                  text: 'Sign Up', // Final step button text
-                  onPressed: _trySubmitForm,
-                ),
+                PrimaryButton(text: 'Sign Up', onPressed: _trySubmitForm),
                 const SizedBox(height: 40),
               ],
             ),

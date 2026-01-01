@@ -1,5 +1,3 @@
-//Main authentication page, routes to different auth flows based on parameter
-
 import 'package:flutter/material.dart';
 import 'package:tappolev1/pages/auth/otploginflow.dart';
 import 'package:tappolev1/pages/auth/emailloginflow.dart';

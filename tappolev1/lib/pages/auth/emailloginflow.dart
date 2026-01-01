@@ -7,6 +7,7 @@ import '../../components/volunteer_navbar.dart';
 import '../auth/signupflow.dart';
 import '../../theme/app_styles.dart';
 import '../../theme/app_colors.dart';
+import '../../components/styled_snackbar.dart';
 
 enum EmailSteps { welcome, emailPasswordEntry }
 
@@ -57,8 +58,10 @@ class _EmailloginflowState extends State<Emailloginflow> {
           MaterialPageRoute(builder: (_) => const VolunteerNavBar()),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error: User role not found.')),
+        StyledSnackbar.show(
+          context: context,
+          message: 'Error: User role not found.',
+          type: SnackbarType.error,
         );
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const SeniorNavBar()),
@@ -79,9 +82,11 @@ class _EmailloginflowState extends State<Emailloginflow> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(errorMessage)));
+        StyledSnackbar.show(
+          context: context,
+          message: errorMessage,
+          type: SnackbarType.error,
+        );
         setState(() {
           _isLoading = false;
         });
@@ -132,15 +137,8 @@ class WelcomeStep extends StatelessWidget {
           children: <Widget>[
             const SizedBox(height: 250.0),
             Image.asset('assets/images/logo.png', height: 150.0),
-            const SizedBox(height: 10.0),
-            // Text(
-            //   'Welcome to Tappole, where you can seek for digital help or offer a kind hand!',
-            //   style: primarypTextStyle.copyWith(color: Colors.white  ),
-            //   textAlign: TextAlign.center,
-            // ),
-            const SizedBox(height: 70.0),
+            const SizedBox(height: 80.0),
             Container(
-              // height: 80,
               width: 200,
               decoration: BoxDecoration(boxShadow: primaryButtonShadow),
               child: PrimaryButton(
@@ -198,13 +196,9 @@ class _EmailPasswordStepState extends State<EmailPasswordStep> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 1. Resize prevents keyboard from covering fields,
-      // but we handle the background separately so it doesn't squish.
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // --- FIXED BACKGROUND ---
-          // This stays still even when keyboard opens
           Container(
             width: double.infinity,
             height: double.infinity,
@@ -216,17 +210,11 @@ class _EmailPasswordStepState extends State<EmailPasswordStep> {
             ),
           ),
 
-          // --- SCROLLABLE CONTENT ---
           LayoutBuilder(
             builder: (context, constraints) {
               return SingleChildScrollView(
-                // This ensures we can scroll if height is too small
                 child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    // This forces the content to be at least as tall as the screen
-                    // so MainAxisAlignment.center works effectively.
-                    minHeight: constraints.maxHeight,
-                  ),
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 50.0),
                     child: Column(
@@ -255,8 +243,7 @@ class _EmailPasswordStepState extends State<EmailPasswordStep> {
                           ),
                           style: primaryInputLabelTextStyle,
                           keyboardType: TextInputType.emailAddress,
-                          textInputAction:
-                              TextInputAction.next, // Moves to next field
+                          textInputAction: TextInputAction.next,
                         ),
 
                         const SizedBox(height: 10),
@@ -299,7 +286,6 @@ class _EmailPasswordStepState extends State<EmailPasswordStep> {
 
                         const SizedBox(height: 20),
 
-                        // Alternative Login Link
                         Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
@@ -322,7 +308,7 @@ class _EmailPasswordStepState extends State<EmailPasswordStep> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 30), // Bottom padding for safety
+                        const SizedBox(height: 30),
                       ],
                     ),
                   ),

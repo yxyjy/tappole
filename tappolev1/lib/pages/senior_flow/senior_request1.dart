@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tappolev1/components/primary_button.dart';
 import 'package:tappolev1/components/senior_navbar.dart';
+import 'package:tappolev1/components/styled_snackbar.dart';
 import 'package:tappolev1/services/request_service.dart';
 import 'package:tappolev1/theme/app_colors.dart';
 import 'package:tappolev1/theme/app_styles.dart';
@@ -95,16 +97,20 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Audio transcribed successfully!')),
+        StyledSnackbar.show(
+          context: context,
+          message: 'Transcription successful!',
+          type: SnackbarType.success,
         );
       }
     } catch (e) {
       print("Transcription Error: $e");
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Transcription failed: $e')));
+        StyledSnackbar.show(
+          context: context,
+          message: 'Transcription failed: $e',
+          type: SnackbarType.error,
+        );
       }
     } finally {
       if (mounted) {
@@ -115,10 +121,10 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
 
   Future<void> _submitRequest() async {
     if (_contentController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter your message or speak your request.'),
-        ),
+      StyledSnackbar.show(
+        context: context,
+        message: 'Please enter your message or speak your request.',
+        type: SnackbarType.warning,
       );
       return;
     }
@@ -134,8 +140,10 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Request submitted successfully!')),
+        StyledSnackbar.show(
+          context: context,
+          message: 'Request submitted successfully!',
+          type: SnackbarType.success,
         );
 
         Navigator.of(context).pushReplacement(
@@ -146,8 +154,10 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submission failed: ${e.toString()}')),
+        StyledSnackbar.show(
+          context: context,
+          message: 'Submission failed: ${e.toString()}',
+          type: SnackbarType.error,
         );
       }
     } finally {
@@ -194,19 +204,14 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
                 child: GestureDetector(
                   onLongPressStart: (_) {
                     _startRecording();
-                    // Optional: Add Haptic Feedback for better feel
-                    // HapticFeedback.mediumImpact();
+                    HapticFeedback.mediumImpact();
                   },
                   onLongPressEnd: (_) {
                     _stopAndTranscribe();
                   },
-                  // We use AnimatedContainer AS the button, not wrapping it
                   child: AnimatedContainer(
-                    duration: const Duration(
-                      milliseconds: 200,
-                    ), // Snappy duration
-                    curve: Curves.easeOutBack, // Bouncy effect when growing
-                    // 1. Dynamic Size: Grows when recording
+                    duration: const Duration(milliseconds: 200),
+                    curve: Curves.easeOutBack,
                     width: 120,
                     height: 120,
 
@@ -219,7 +224,6 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
                           ? const Color.fromARGB(255, 97, 187, 190)
                           : AppColors.lighterOrange,
 
-                      // 3. The "Glow" Effect (Shadow)
                       boxShadow: [
                         BoxShadow(
                           color: _isRecording
@@ -230,14 +234,13 @@ class _SeniorRequest1PageState extends State<SeniorRequest1Page> {
                                   228,
                                 ).withAlpha(50)
                               : Colors.transparent,
-                          blurRadius: _isRecording ? 30 : 10, // Soft glow
-                          spreadRadius: _isRecording ? 10 : 5, // Wide glow
+                          blurRadius: _isRecording ? 30 : 10,
+                          spreadRadius: _isRecording ? 10 : 5,
                         ),
                       ],
                     ),
                     child: Image.asset(
                       'assets/images/miclogo.png',
-                      // Optional: Make icon white when active if needed
                       color: _isRecording ? Colors.white : null,
                     ),
                   ),

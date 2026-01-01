@@ -260,25 +260,21 @@ class _VolunteerHomePageState extends State<VolunteerHomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // "Pending" Pill
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(
-                      0xFFFFC525,
-                    ), // The Yellow Color from design
+                    color:
+                        AppColors.warningOrange, // The Yellow Color from design
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Pending",
-                    style: TextStyle(
-                      fontFamily: 'Archivo',
+                    style: primarypTextStyle.copyWith(
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Color(0xFF192133), // Dark text on yellow
                     ),
                   ),
                 ),

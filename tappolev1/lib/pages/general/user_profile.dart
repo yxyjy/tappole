@@ -462,61 +462,6 @@ class _ProfilePageState extends State<ProfilePage> {
             },
             text: "Log Out",
           ),
-          // TextButton(
-          //   onPressed: () async {
-          //     await _authService.signOut();
-          //     if (context.mounted) {
-          //       Navigator.of(context).pushAndRemoveUntil(
-          //         MaterialPageRoute(builder: (context) => const AuthGate()),
-          //         (route) => false,
-          //       );
-          //     }
-          //   },
-          //   // onPressed: () async {
-          //   //   try {
-          //   //     await _requestService.cancelRequest(request.req_id);
-
-          //   //     if (context.mounted) {
-          //   //       Navigator.of(context).pop();
-          //   //       Navigator.of(context).pop();
-
-          //   //       setState(() {
-          //   //         _requestsFuture = _requestService.getRequestsBySenior();
-          //   //       });
-
-          //   //       ScaffoldMessenger.of(context).showSnackBar(
-          //   //         SnackBar(
-          //   //           content: Text(
-          //   //             "Request cancelled successfully",
-          //   //             style: primarypTextStyle,
-          //   //           ),
-          //   //           backgroundColor: Colors.grey,
-          //   //         ),
-          //   //       );
-          //   //     }
-          //   //   } catch (e) {
-          //   //     print("Cancel Error: $e");
-          //   //     if (context.mounted) {
-          //   //       Navigator.pop(context);
-          //   //       ScaffoldMessenger.of(context).showSnackBar(
-          //   //         SnackBar(
-          //   //           content: Text(
-          //   //             "Failed to cancel: $e",
-          //   //             style: primarypTextStyle,
-          //   //           ),
-          //   //         ),
-          //   //       );
-          //   //     }
-          //   //   }
-          //   // },
-          //   child: Text(
-          //     "Yes, Log Out",
-          //     style: primarypTextStyle.copyWith(
-          //       color: Colors.red,
-          //       fontWeight: FontWeight.bold,
-          //     ),
-          //   ),
-          // ),
         ],
       ),
     );

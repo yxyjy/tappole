@@ -255,24 +255,24 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
   Widget _buildRequestCard(BuildContext context, Request request) {
     final String status = request.req_status;
 
-    // 1. Define Styles based on Status (keeping your color logic)
     Color statusBgColor;
-    Color statusTextColor = Colors.black; // Default text color
+    Color statusTextColor = AppColors.primaryDarkBlue;
 
     switch (status) {
       case 'pending':
-        statusBgColor = const Color(0xFFFFC525); // Yellow
+        statusBgColor = AppColors.warningOrange;
+        statusTextColor = Colors.white;
         break;
       case 'accepted':
-        statusBgColor = const Color(0xFFF06638); // Orange
+        statusBgColor = AppColors.successGreen;
         statusTextColor = Colors.white;
         break;
       case 'completed':
-        statusBgColor = const Color(0xFF27B533); // Green
+        statusBgColor = AppColors.infoBlue;
         statusTextColor = Colors.white;
         break;
       case 'cancelled':
-        statusBgColor = const Color(0xFFC84949); // Red
+        statusBgColor = AppColors.cancelledGrey;
         statusTextColor = Colors.white;
         break;
       default:
@@ -451,15 +451,15 @@ class _VolunteerActivityPageState extends State<VolunteerActivityPage> {
     switch (rating) {
       case 1:
         icon = Icons.sentiment_dissatisfied_rounded;
-        color = const Color(0xFFFF5252);
+        color = AppColors.errorOrange;
         break;
       case 2:
         icon = Icons.sentiment_neutral_rounded;
-        color = const Color(0xFFFFC107);
+        color = AppColors.pendingYellow;
         break;
       case 3:
         icon = Icons.sentiment_very_satisfied_rounded;
-        color = const Color(0xFF4CAF50);
+        color = AppColors.successGreen;
         break;
       default:
         icon = Icons.help_outline;

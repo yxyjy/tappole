@@ -1,6 +1,7 @@
 import 'dart:io'; // Required for File
 import 'package:flutter/material.dart'; // Required for picking images
 import 'package:tappolev1/components/primary_button.dart';
+import 'package:tappolev1/components/styled_snackbar.dart';
 import 'package:tappolev1/services/profile_service.dart';
 import 'package:tappolev1/models/profile.dart';
 import 'package:tappolev1/theme/app_styles.dart';
@@ -70,9 +71,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
     } catch (e) {
       debugPrint("Error picking image: $e");
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Failed to pick image')));
+        StyledSnackbar.show(
+          context: context,
+          message: 'Failed to pick image.',
+          type: SnackbarType.error,
+        );
       }
     }
   }
@@ -127,15 +130,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
       await _profileService.updateProfile(updatedProfile);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
+        StyledSnackbar.show(
+          context: context,
+          message: 'Profile updated successfully!',
+          type: SnackbarType.success,
         );
         Navigator.of(context).pop(true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Update failed: ${e.toString()}')),
+        StyledSnackbar.show(
+          context: context,
+          message: 'Update failed: ${e.toString()}',
+          type: SnackbarType.error,
         );
       }
     } finally {
@@ -219,7 +226,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         ),
                         const SizedBox(height: 30),
 
-                        // First Name
                         TextFormField(
                           style: editedPrimaryInputTextStyle,
                           controller: _firstNameController,
