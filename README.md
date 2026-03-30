@@ -8,6 +8,9 @@
 
 This project was developed as a **Final Year Project (FYP)** to address the technical and usability barriers faced by the aging population in digital communication.
 
+View the project introduction here : [View the PDF document](tappolev1/Project_Introduction.pdf)
+
+
 ---
 
 ## 🛠️ Tech Stack
